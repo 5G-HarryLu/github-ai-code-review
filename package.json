@@ -1,14 +1,14 @@
 {
   "name": "github-ai-code-review",
   "version": "1.0.0",
-  "description": "AI Code Review GitHub Action powered by Google Gemini and MCP server for GitHub operations",
+  "description": "AI Code Review GitHub Action powered by Claude AI and MCP server for GitHub operations",
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
     "build": "tsc",
     "dev": "tsx src/index.ts",
     "start": "node dist/index.js",
-    "test:gemini": "node test-gemini-api.js"
+    "test:claude": "node test-claude-api.js"
   },
   "repository": {
     "type": "git",
@@ -19,7 +19,8 @@
     "github-action",
     "ai",
     "code-review",
-    "gemini",
+    "claude",
+    "anthropic",
     "mcp",
     "model-context-protocol",
     "automation",
@@ -41,7 +42,7 @@
     "USAGE.md"
   ],
   "dependencies": {
-    "@google/generative-ai": "^0.21.0",
+    "@anthropic-ai/sdk": "^0.32.1",
     "@modelcontextprotocol/sdk": "^0.4.0",
     "axios": "^1.6.0"
   },

@@ -33,8 +33,8 @@ if (!REPO || !PR_NUMBER) {
   process.exit(1);
 }
 
-// 初始化 Claude - 使用 claude-sonnet-4 高級推理模型
-const CLAUDE_MODEL = process.env.CLAUDE_MODEL || "claude-sonnet-4-20250514";
+// 初始化 Claude - 使用 claude-sonnet-4.5 高級推理模型
+const CLAUDE_MODEL = process.env.CLAUDE_MODEL || "claude-sonnet-4-5-20250929";
 
 console.log(`🔧 準備初始化 Claude 模型: ${CLAUDE_MODEL}`);
 
@@ -193,6 +193,7 @@ async function analyzeWithClaude(prompt, retries = 2) {
   // 模型降級順序 (2025年最新模型)
   const fallbackModels = [
     CLAUDE_MODEL,
+    'claude-sonnet-4-5-20250929',  // Claude Sonnet 4.5
     'claude-sonnet-4-20250514',    // Claude Sonnet 4
     'claude-3-7-sonnet-20250219',  // Claude 3.7 Sonnet
     'claude-3-5-sonnet-20241022',  // Claude 3.5 Sonnet

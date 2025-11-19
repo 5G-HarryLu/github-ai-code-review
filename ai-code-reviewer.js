@@ -1,25 +1,25 @@
 #!/usr/bin/env node
 
 /**
- * AI Code Reviewer using Anthropic Claude API
+ * AI Code Reviewer using Google Gemini API
  *
  * This script:
  * 1. Uses MCP GitHubClient to fetch PR data (files, comments, diff)
- * 2. Sends data to Claude API for intelligent analysis
+ * 2. Sends data to Gemini API for intelligent analysis
  * 3. Posts AI-generated review comments to the PR
  */
 
-import Anthropic from '@anthropic-ai/sdk';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { GitHubClient } from './dist/github-client.js';
 
-const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GITHUB_TOKEN = process.env.GITHUB_ACCESS_TOKEN;
 const REPO = process.env.GITHUB_REPOSITORY;
 const PR_NUMBER = parseInt(process.env.PR_NUMBER);
 
-if (!CLAUDE_API_KEY) {
-  console.error('❌ 錯誤: 需要設置 CLAUDE_API_KEY 環境變數');
-  console.error('請前往 https://console.anthropic.com/ 獲取 API key');
+if (!GEMINI_API_KEY) {
+  console.error('❌ 錯誤: 需要設置 GEMINI_API_KEY 環境變數');
+  console.error('請前往 https://aistudio.google.com/app/apikey 獲取 API key');
   process.exit(1);
 }
 
@@ -33,20 +33,20 @@ if (!REPO || !PR_NUMBER) {
   process.exit(1);
 }
 
-// 初始化 Claude - 支持通過環境變數選擇模型
-// 可用模型：claude-3-7-sonnet-20250219, claude-3-5-sonnet-20241022, claude-3-5-haiku-20241022
-const CLAUDE_MODEL = process.env.CLAUDE_MODEL || "claude-3-5-sonnet-20241022"; // 默認使用 Claude 3.5 Sonnet
+// 初始化 Gemini - 使用穩定的 gemini-1.5-flash 模型
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-1.5-flash";
 
-console.log(`🔧 準備初始化 Claude 模型: ${CLAUDE_MODEL}`);
+console.log(`🔧 準備初始化 Gemini 模型: ${GEMINI_MODEL}`);
 
 // 添加 API key 驗證
-if (CLAUDE_API_KEY.length < 20 || !CLAUDE_API_KEY.startsWith('sk-ant-')) {
-  console.error('⚠️  警告: CLAUDE_API_KEY 格式可能不正確');
-  console.error('   正確格式應該以 "sk-ant-" 開頭');
+if (GEMINI_API_KEY.length < 20 || !GEMINI_API_KEY.startsWith('AIza')) {
+  console.error('⚠️  警告: GEMINI_API_KEY 格式可能不正確');
+  console.error('   正確格式應該以 "AIza" 開頭，長度約 39 個字符');
 }
 
-const anthropic = new Anthropic({
-  apiKey: CLAUDE_API_KEY,
+const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({
+  model: GEMINI_MODEL,
 });
 
 const githubClient = new GitHubClient();
@@ -81,7 +81,7 @@ async function fetchPRData() {
 }
 
 /**
- * 構建給 Claude 的 prompt
+ * 構建給 Gemini 的 prompt
  */
 function buildPrompt(prData) {
   const { pr, files, comments } = prData;
@@ -185,17 +185,18 @@ ${commentsInfo}
 }
 
 /**
- * 使用 Claude API 分析程式碼（帶重試機制和模型降級）
+ * 使用 Gemini API 分析程式碼（帶重試機制和模型降級）
  */
-async function analyzeWithClaude(prompt, retries = 2) {
-  console.log('🤖 Claude AI 正在分析程式碼...\n');
-  console.log(`📊 使用模型: ${CLAUDE_MODEL}\n`);
+async function analyzeWithGemini(prompt, retries = 2) {
+  console.log('🤖 Gemini AI 正在分析程式碼...\n');
+  console.log(`📊 使用模型: ${GEMINI_MODEL}\n`);
 
   // 模型降級順序
   const fallbackModels = [
-    CLAUDE_MODEL,
-    'claude-3-5-sonnet-20241022',
-    'claude-3-5-haiku-20241022'
+    GEMINI_MODEL,
+    'gemini-1.5-pro',
+    'gemini-1.5-flash',
+    'gemini-1.5-flash-8b'
   ].filter((v, i, a) => a.indexOf(v) === i); // 去重
 
   for (const modelName of fallbackModels) {
@@ -203,44 +204,42 @@ async function analyzeWithClaude(prompt, retries = 2) {
 
     for (let attempt = 1; attempt <= retries + 1; attempt++) {
       try {
-        const message = await anthropic.messages.create({
-          model: modelName,
-          max_tokens: 4096,
-          messages: [{
-            role: 'user',
-            content: prompt
-          }]
-        });
-
-        const review = message.content[0].text;
+        const currentModel = genAI.getGenerativeModel({ model: modelName });
+        const result = await currentModel.generateContent(prompt);
+        const response = result.response;
+        const review = response.text();
 
         console.log(`✅ AI 分析完成（使用模型: ${modelName}）\n`);
-        console.log(`📊 Token 使用: 輸入 ${message.usage.input_tokens}, 輸出 ${message.usage.output_tokens}\n`);
+
+        // 顯示 token 使用情況（如果有的話）
+        if (result.response.usageMetadata) {
+          const usage = result.response.usageMetadata;
+          console.log(`📊 Token 使用: 輸入 ${usage.promptTokenCount}, 輸出 ${usage.candidatesTokenCount}\n`);
+        }
 
         return review;
 
       } catch (error) {
-        const isQuotaError = error.status === 429 ||
-                            error.message?.includes('rate_limit') ||
-                            error.message?.includes('quota');
+        const isQuotaError = error.message?.includes('429') ||
+                            error.message?.includes('quota') ||
+                            error.message?.includes('rate limit');
 
-        const isAuthError = error.status === 401 ||
-                           error.status === 403 ||
+        const isAuthError = error.message?.includes('API_KEY_INVALID') ||
                            error.message?.includes('authentication') ||
-                           error.message?.includes('api_key');
+                           error.message?.includes('403');
 
-        const isModelError = error.status === 404 ||
-                            error.message?.includes('model_not_found');
+        const isModelError = error.message?.includes('models/') &&
+                            error.message?.includes('not found');
 
-        console.error(`❌ Claude API 調用失敗 (模型: ${modelName}, 嘗試 ${attempt}/${retries + 1}):`, error.message);
+        console.error(`❌ Gemini API 調用失敗 (模型: ${modelName}, 嘗試 ${attempt}/${retries + 1}):`, error.message);
 
         // API Key 錯誤
         if (isAuthError) {
           console.error('\n🔑 API Key 錯誤:');
-          console.error('1. 檢查 CLAUDE_API_KEY 是否正確設置');
-          console.error('2. 前往 https://console.anthropic.com/ 驗證你的 API key');
+          console.error('1. 檢查 GEMINI_API_KEY 是否正確設置');
+          console.error('2. 前往 https://aistudio.google.com/app/apikey 驗證你的 API key');
           console.error('3. 確認 API key 有效且已啟用');
-          console.error('4. 確認 API key 格式正確（應以 "sk-ant-" 開頭）\n');
+          console.error('4. 確認 API key 格式正確（應以 "AIza" 開頭）\n');
           throw error; // API key 錯誤無法重試
         }
 
@@ -253,12 +252,11 @@ async function analyzeWithClaude(prompt, retries = 2) {
         // 配額錯誤
         if (isQuotaError) {
           console.error('\n⚠️  配額限制錯誤:');
-          console.error('1. 檢查 API 使用量: https://console.anthropic.com/settings/usage');
-          console.error('2. Claude API 配額限制：');
-          console.error('   - Free tier: $5 免費額度');
-          console.error('   - Tier 1: $100/月，RPM: 50, TPM: 40K');
-          console.error('   - Tier 2: $500/月，RPM: 1000, TPM: 80K');
-          console.error('3. 考慮升級到更高的 tier\n');
+          console.error('1. 檢查 API 使用量: https://aistudio.google.com/app/apikey');
+          console.error('2. Gemini API 免費配額限制：');
+          console.error('   - gemini-1.5-flash: 每分鐘 15 次，每天 1500 次');
+          console.error('   - gemini-1.5-pro: 每分鐘 2 次，每天 50 次');
+          console.error('3. 等待配額重置或升級到付費計劃\n');
 
           // 嘗試降級模型
           if (fallbackModels.indexOf(modelName) < fallbackModels.length - 1) {
@@ -288,7 +286,7 @@ async function analyzeWithClaude(prompt, retries = 2) {
   }
 
   // 所有模型都嘗試失敗
-  throw new Error('所有 Claude 模型都無法使用，請檢查 API key 和配額');
+  throw new Error('所有 Gemini 模型都無法使用，請檢查 API key 和配額');
 }
 
 /**
@@ -302,7 +300,7 @@ async function postReview(review) {
 ${review}
 
 ---
-_🤖 Powered by [AI Code Review Action](https://github.com/5G-HarryLu/github-ai-code-review) with Claude ${CLAUDE_MODEL}_
+_🤖 Powered by [AI Code Review Action](https://github.com/5G-HarryLu/github-ai-code-review) with Google Gemini ${GEMINI_MODEL}_
 `;
 
   try {
@@ -342,7 +340,7 @@ async function main() {
   console.log('🚀 AI Code Review Agent 啟動\n');
   console.log(`📋 倉庫: ${REPO}`);
   console.log(`🔢 PR: #${PR_NUMBER}`);
-  console.log(`🤖 AI 模型: Claude ${CLAUDE_MODEL}\n`);
+  console.log(`🤖 AI 模型: Gemini ${GEMINI_MODEL}\n`);
   console.log('═══════════════════════════════════════\n');
 
   try {
@@ -352,8 +350,8 @@ async function main() {
     // 2. 構建 prompt
     const prompt = buildPrompt(prData);
 
-    // 3. Claude 分析
-    const review = await analyzeWithClaude(prompt);
+    // 3. Gemini 分析
+    const review = await analyzeWithGemini(prompt);
 
     // 4. 發布評論
     await postReview(review);

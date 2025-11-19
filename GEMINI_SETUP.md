@@ -1,15 +1,15 @@
 # 🔮 Google Gemini AI Code Review 設置指南
 
-本專案使用 **Google Gemini 1.5 Pro** 作為 AI Code Review Agent，自動分析每個 Pull Request 並提供專業的程式碼審查建議。
+本專案使用 **Google Gemini 2.0 Flash Experimental** 作為 AI Code Review Agent，自動分析每個 Pull Request 並提供火爆直接的程式碼審查反饋。
 
 ---
 
 ## 🎁 為什麼選擇 Gemini？
 
-- ✅ **免費額度** - 每分鐘 15 次請求的免費配額
-- ✅ **強大功能** - Gemini 1.5 Pro 具有優秀的程式碼理解能力
-- ✅ **大上下文** - 支持 2M tokens，可以處理大型 PR
-- ✅ **快速響應** - API 響應速度快
+- ✅ **免費額度** - 每天 1500 次請求的免費配額
+- ✅ **強大功能** - Gemini 2.0 Flash 具有優秀的程式碼理解能力
+- ✅ **快速響應** - 最新的 Flash 模型響應速度極快
+- ✅ **火爆風格** - 直接、犀利的審查反饋，不拐彎抹角
 - ✅ **多語言支持** - 支持繁體中文審查
 
 ---
@@ -43,7 +43,7 @@
 
 1. **前往 GitHub Repository**
    ```
-   https://github.com/BBsBrezz/Gitlab-MCP
+   https://github.com/5G-HarryLu/github-ai-code-review
    ```
 
 2. **進入 Settings**
@@ -73,14 +73,13 @@
 
 ## 📊 Gemini API 配額
 
-### 免費配額（Gemini 1.5 Pro）
+### 免費配額（Gemini 2.0 Flash Experimental）
 
 | 項目 | 限制 |
 |------|------|
 | **每分鐘請求數** | 15 次 |
 | **每天請求數** | 1,500 次 |
-| **輸入 tokens** | 每分鐘 1M tokens |
-| **輸出 tokens** | 每分鐘 32K tokens |
+| **完全免費** | 無需信用卡 |
 
 ### 費用估算
 
@@ -143,8 +142,8 @@ AI 審查完成後，你會在 PR 中看到：
 # 設置環境變數
 export GEMINI_API_KEY="AIzaSy..."
 export GITHUB_ACCESS_TOKEN="your-github-token"
-export GITHUB_REPOSITORY="BBsBrezz/Gitlab-MCP"
-export PR_NUMBER="4"
+export GITHUB_REPOSITORY="5G-HarryLu/github-ai-code-review"
+export PR_NUMBER="1"
 
 # 安裝依賴
 npm install
@@ -166,7 +165,7 @@ node ai-code-reviewer.js
 
 ```javascript
 const model = genAI.getGenerativeModel({
-  model: "gemini-1.5-pro",  // 可選: gemini-1.5-flash (更快但能力較弱)
+  model: "gemini-2.0-flash-exp",  // Gemini 2.0 Flash Experimental（推薦）
 });
 ```
 
@@ -174,9 +173,9 @@ const model = genAI.getGenerativeModel({
 
 | 模型 | 特點 | 適用場景 |
 |------|------|----------|
-| `gemini-1.5-pro` | 最強大 | 複雜程式碼審查 |
-| `gemini-1.5-flash` | 最快速 | 簡單 PR 快速審查 |
-| `gemini-1.0-pro` | 較舊 | 不推薦 |
+| `gemini-2.0-flash-exp` | 最新最快 | 程式碼審查（推薦）|
+| `gemini-1.5-pro` | 強大穩定 | 複雜程式碼審查 |
+| `gemini-1.5-flash` | 快速穩定 | 簡單 PR 快速審查 |
 
 ### 調整審查重點
 
@@ -261,5 +260,5 @@ const model = genAI.getGenerativeModel({
 💡 **提示**: Gemini 的免費配額對大部分小型專案來說完全夠用！
 
 如有問題，請查看：
-- [GitHub Issues](https://github.com/BBsBrezz/Gitlab-MCP/issues)
+- [GitHub Issues](https://github.com/5G-HarryLu/github-ai-code-review/issues)
 - [Gemini API Support](https://ai.google.dev/support)

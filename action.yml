@@ -6,6 +6,10 @@ inputs:
   gemini-api-key:
     description: 'Google Gemini API Key (get from https://makersuite.google.com/app/apikey)'
     required: true
+  gemini-model:
+    description: 'Gemini model to use (gemini-1.5-flash, gemini-1.5-pro, gemini-2.0-flash-exp)'
+    required: false
+    default: 'gemini-1.5-flash'
   github-token:
     description: 'GitHub Token for API access'
     required: false
@@ -52,6 +56,7 @@ runs:
       shell: bash
       env:
         GEMINI_API_KEY: ${{ inputs.gemini-api-key }}
+        GEMINI_MODEL: ${{ inputs.gemini-model }}
         GITHUB_ACCESS_TOKEN: ${{ inputs.github-token }}
         GITHUB_REPOSITORY: ${{ inputs.repository }}
         PR_NUMBER: ${{ inputs.pr-number }}

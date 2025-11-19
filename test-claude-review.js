@@ -1,35 +1,62 @@
 // Test file for Claude API code review validation
 // This file intentionally contains various code issues
 
-// Issue 1: Hardcoded credentials (Security)
-const API_KEY = 'sk-1234567890abcdef';
-const DATABASE_PASSWORD = 'admin123';
+// Fixed: Use environment variables for credentials
+const API_KEY = process.env.API_KEY;
+const DATABASE_PASSWORD = process.env.DATABASE_PASSWORD;
 
-// Issue 2: SQL Injection vulnerability
+if (!API_KEY || !DATABASE_PASSWORD) {
+  throw new Error('Missing required environment variables: API_KEY and DATABASE_PASSWORD');
+}
+
+// Fixed: Use parameterized query to prevent SQL injection
 function getUserData(username) {
-  const query = `SELECT * FROM users WHERE username = '${username}'`;
-  return database.query(query);
+  // Parameterized query - safe from SQL injection
+  const query = 'SELECT * FROM users WHERE username = ?';
+  return database.query(query, [username]);
 }
 
-// Issue 3: No input validation
+// Fixed: Add proper input validation
 function processPayment(amount) {
-  return amount * 1.1; // No validation if amount is negative or invalid
+  // Validate input
+  if (typeof amount !== 'number' || isNaN(amount)) {
+    throw new Error('Amount must be a valid number');
+  }
+
+  if (amount <= 0) {
+    throw new Error('Amount must be positive');
+  }
+
+  if (!Number.isFinite(amount)) {
+    throw new Error('Amount must be finite');
+  }
+
+  return amount * 1.1;
 }
 
-// Issue 4: Empty catch block
+// Fixed: Proper error handling in catch block
 async function loadConfig() {
   try {
     const config = await fetch('/api/config');
+
+    if (!config.ok) {
+      throw new Error(`Failed to load config: ${config.status} ${config.statusText}`);
+    }
+
     return config.json();
   } catch (error) {
-    // Empty catch - bad practice
+    // Log error for debugging
+    console.error('Error loading configuration:', error);
+
+    // Return default config or rethrow
+    throw new Error(`Configuration load failed: ${error.message}`);
   }
 }
 
-// Issue 5: Using var instead of const/let
+// Fixed: Use modern const/let instead of var
 function calculateTotal(items) {
-  var total = 0;
-  for (var i = 0; i < items.length; i++) {
+  let total = 0;
+  for (let i = 0; i < items.length; i++) {
     total += items[i].price;
   }
   return total;
@@ -55,9 +82,18 @@ async function fetchUserProfile(userId) {
   }
 }
 
-// Issue 6: Missing null check
+// Fixed: Add defensive null/undefined checks
 function formatUserName(user) {
-  return user.firstName + ' ' + user.lastName; // No null check on user
+  // Defensive programming - check for null/undefined
+  if (!user) {
+    throw new Error('User object is required');
+  }
+
+  if (!user.firstName || !user.lastName) {
+    throw new Error('User must have firstName and lastName');
+  }
+
+  return user.firstName + ' ' + user.lastName;
 }
 
 module.exports = {

@@ -33,8 +33,8 @@ if (!REPO || !PR_NUMBER) {
   process.exit(1);
 }
 
-// 初始化 Gemini - 使用穩定的 gemini-1.5-flash 模型
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-1.5-flash";
+// 初始化 Gemini - 使用最新穩定的 gemini-2.5-flash 模型
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 
 console.log(`🔧 準備初始化 Gemini 模型: ${GEMINI_MODEL}`);
 
@@ -191,12 +191,13 @@ async function analyzeWithGemini(prompt, retries = 2) {
   console.log('🤖 Gemini AI 正在分析程式碼...\n');
   console.log(`📊 使用模型: ${GEMINI_MODEL}\n`);
 
-  // 模型降級順序
+  // 模型降級順序 (2025年最新模型)
   const fallbackModels = [
     GEMINI_MODEL,
-    'gemini-1.5-pro',
-    'gemini-1.5-flash',
-    'gemini-1.5-flash-8b'
+    'gemini-2.5-flash',      // 最佳性價比
+    'gemini-2.0-flash',      // 上一代穩定版
+    'gemini-2.5-flash-lite', // 最快速度
+    'gemini-2.5-pro'         // 高級推理
   ].filter((v, i, a) => a.indexOf(v) === i); // 去重
 
   for (const modelName of fallbackModels) {
@@ -253,9 +254,10 @@ async function analyzeWithGemini(prompt, retries = 2) {
         if (isQuotaError) {
           console.error('\n⚠️  配額限制錯誤:');
           console.error('1. 檢查 API 使用量: https://aistudio.google.com/app/apikey');
-          console.error('2. Gemini API 免費配額限制：');
-          console.error('   - gemini-1.5-flash: 每分鐘 15 次，每天 1500 次');
-          console.error('   - gemini-1.5-pro: 每分鐘 2 次，每天 50 次');
+          console.error('2. Gemini API 免費配額限制（2025年）：');
+          console.error('   - gemini-2.5-flash: 每分鐘 15 次，每天 1500 次');
+          console.error('   - gemini-2.5-pro: 每分鐘 2 次，每天 50 次');
+          console.error('   - gemini-2.0-flash: 每分鐘 15 次，每天 1500 次');
           console.error('3. 等待配額重置或升級到付費計劃\n');
 
           // 嘗試降級模型

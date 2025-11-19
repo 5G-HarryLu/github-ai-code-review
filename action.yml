@@ -7,9 +7,9 @@ inputs:
     description: 'Google Gemini API Key (get from https://aistudio.google.com/app/apikey)'
     required: true
   gemini-model:
-    description: 'Gemini model to use (gemini-1.5-flash, gemini-1.5-pro, gemini-1.5-flash-8b)'
+    description: 'Gemini model to use (gemini-2.5-flash, gemini-2.5-pro, gemini-2.0-flash, gemini-2.5-flash-lite)'
     required: false
-    default: 'gemini-1.5-flash'
+    default: 'gemini-2.5-flash'
   github-token:
     description: 'GitHub Token for API access'
     required: false

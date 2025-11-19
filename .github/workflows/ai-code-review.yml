@@ -31,13 +31,13 @@ jobs:
       - name: Run AI Code Review
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GEMINI_MODEL: ${{ secrets.GEMINI_MODEL || 'gemini-1.5-flash' }}
+          GEMINI_MODEL: ${{ secrets.GEMINI_MODEL || 'gemini-2.5-flash' }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           echo "🤖 啟動 AI Code Review Agent..."
-          echo "🔮 AI 模型: Gemini ${GEMINI_MODEL:-1.5 Flash}"
+          echo "🔮 AI 模型: Gemini ${GEMINI_MODEL:-2.5 Flash}"
           echo "📋 Repository: $GITHUB_REPOSITORY"
           echo "🔢 PR Number: $PR_NUMBER"
           echo ""

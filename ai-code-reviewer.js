@@ -297,7 +297,7 @@ async function analyzeWithGemini(prompt, retries = 2) {
 async function postReview(review) {
   console.log('📝 發布 AI 評論到 PR...\n');
 
-  const commentBody = `## 🔥 火爆辛辣 AI Code Review 來啦！
+  const commentBody = `## AI Code Review
 
 ${review}
 

@@ -33,8 +33,8 @@ if (!REPO || !PR_NUMBER) {
   process.exit(1);
 }
 
-// 初始化 Gemini - 使用最新穩定的 gemini-2.5-flash 模型
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+// 初始化 Gemini - 使用 gemini-2.5-pro 高級推理模型
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-pro";
 
 console.log(`🔧 準備初始化 Gemini 模型: ${GEMINI_MODEL}`);
 

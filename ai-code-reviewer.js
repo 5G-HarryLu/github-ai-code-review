@@ -206,6 +206,9 @@ async function postReview(review) {
   const commentBody = `## 🔥 火爆辛辣 AI Code Review 來啦！
 
 ${review}
+
+---
+_🤖 Powered by [AI Code Review Action](https://github.com/BBsBrezz/Gitlab-MCP) with Google Gemini 2.0_
 `;
 
   try {
@@ -217,9 +220,23 @@ ${review}
     console.log(`   評論 ID: ${comment.id}`);
     console.log(`   URL: ${comment.html_url}\n`);
 
+    // GitHub Actions 輸出
+    if (process.env.GITHUB_OUTPUT) {
+      const fs = await import('fs');
+      fs.appendFileSync(process.env.GITHUB_OUTPUT, `success=true\n`);
+      fs.appendFileSync(process.env.GITHUB_OUTPUT, `comment_url=${comment.html_url}\n`);
+    }
+
     return comment;
   } catch (error) {
     console.error('❌ 發布評論失敗:', error.message);
+
+    // GitHub Actions 輸出錯誤
+    if (process.env.GITHUB_OUTPUT) {
+      const fs = await import('fs');
+      fs.appendFileSync(process.env.GITHUB_OUTPUT, `success=false\n`);
+    }
+
     throw error;
   }
 }

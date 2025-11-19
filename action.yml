@@ -1,0 +1,64 @@
+name: 'AI Code Review with Gemini'
+description: 'Automated code review using Google Gemini AI with aggressive and direct feedback style'
+author: 'BBsBrezz'
+
+inputs:
+  gemini-api-key:
+    description: 'Google Gemini API Key (get from https://makersuite.google.com/app/apikey)'
+    required: true
+  github-token:
+    description: 'GitHub Token for API access'
+    required: false
+    default: ${{ github.token }}
+  repository:
+    description: 'Repository in format owner/repo'
+    required: false
+    default: ${{ github.repository }}
+  pr-number:
+    description: 'Pull Request number to review'
+    required: false
+    default: ${{ github.event.pull_request.number }}
+
+outputs:
+  review-posted:
+    description: 'Whether the review was successfully posted'
+    value: ${{ steps.review.outputs.success }}
+  comment-url:
+    description: 'URL of the posted review comment'
+    value: ${{ steps.review.outputs.comment_url }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install dependencies
+      shell: bash
+      run: |
+        cd ${{ github.action_path }}
+        npm install --production
+
+    - name: Build TypeScript
+      shell: bash
+      run: |
+        cd ${{ github.action_path }}
+        npm run build
+
+    - name: Run AI Code Review
+      id: review
+      shell: bash
+      env:
+        GEMINI_API_KEY: ${{ inputs.gemini-api-key }}
+        GITHUB_ACCESS_TOKEN: ${{ inputs.github-token }}
+        GITHUB_REPOSITORY: ${{ inputs.repository }}
+        PR_NUMBER: ${{ inputs.pr-number }}
+      run: |
+        cd ${{ github.action_path }}
+        node ai-code-reviewer.js
+
+branding:
+  icon: 'check-circle'
+  color: 'purple'

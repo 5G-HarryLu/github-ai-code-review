@@ -1,232 +1,310 @@
-# GitHub MCP Server
+# 🔥 AI Code Review GitHub Action
 
-一個功能強大的 GitHub MCP (Model Context Protocol) 伺服器,提供與 GitHub API 的完整整合。
+基於 Google Gemini AI 的自動化程式碼審查 GitHub Action + GitHub MCP Server，提供火爆直接的程式碼審查反饋。
 
-## 功能特色
+## ✨ 特色功能
 
-### 🚀 GitHub 核心功能
-- **倉庫管理**:列出、查看和管理 GitHub 倉庫
-- **提交歷史**:查看和分析 Git 提交記錄
-- **GitHub Actions**:監控和分析 Workflow 運行狀態
-- **問題管理**:創建、更新和查看 Issues
-- **Pull Request**:管理 PR 生命週期
-- **評論功能**:在 Issues 和 PR 中發表評論
-- **文件讀取**:讀取倉庫中的文件內容
+### 🚀 GitHub Action 模式
+- 🤖 **Google Gemini 2.0 驅動**：使用最新的 Gemini 2.0 Flash Experimental 模型
+- 🔥 **火爆辛辣風格**：直接、犀利的審查反饋，不拐彎抹角
+- 📊 **全方位審查**：涵蓋程式碼品質、安全性、性能、測試等多個維度
+- 🚀 **自動化執行**：PR 創建或更新時自動觸發審查
+- 💬 **智能評論**：自動在 PR 中發布詳細的審查評論
+- 🆓 **免費使用**：基於 Google Gemini 免費配額（每天 1500 次請求）
 
-## 安裝和設定
+### 🔧 MCP Server 模式
+- 📋 **GitHub API 完整整合**：倉庫管理、PR、Issues、Commits 等
+- 🤝 **Claude Desktop 整合**：作為 MCP Server 在 Claude Desktop 中使用
+- 🔍 **程式碼 Diff 分析**：深度分析 PR 變更和文件差異
 
-### 1. 克隆專案
-```bash
-git clone <repository-url>
-cd github-mcp
+---
+
+## 🚀 快速開始 - GitHub Action
+
+### 1. 獲取 Gemini API Key
+
+前往 [Google AI Studio](https://makersuite.google.com/app/apikey) 獲取免費的 API key。
+
+### 2. 設置 Repository Secret
+
+在你的 GitHub repository 中：
+1. 進入 `Settings` → `Secrets and variables` → `Actions`
+2. 點擊 `New repository secret`
+3. 名稱：`GEMINI_API_KEY`
+4. 值：貼上你的 Gemini API key
+
+### 3. 創建 Workflow 文件
+
+在你的 repository 中創建 `.github/workflows/ai-code-review.yml`：
+
+```yaml
+name: AI Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  ai-review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: AI Code Review
+        uses: 5G-HarryLu/github-ai-code-review@v1
+        with:
+          gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-### 2. 安裝依賴
-```bash
-npm install
-# 或
-yarn install
+完成！🎉 現在每次創建或更新 PR 時，AI 都會自動進行程式碼審查。
+
+---
+
+## 📋 進階配置
+
+### 完整參數說明
+
+```yaml
+- name: AI Code Review
+  uses: 5G-HarryLu/github-ai-code-review@v1
+  with:
+    # 必填：Gemini API Key
+    gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
+
+    # 選填：GitHub Token（默認使用內建 token）
+    github-token: ${{ secrets.GITHUB_TOKEN }}
+
+    # 選填：Repository 名稱（默認為當前 repo）
+    repository: ${{ github.repository }}
+
+    # 選填：PR 編號（默認為當前 PR）
+    pr-number: ${{ github.event.pull_request.number }}
 ```
 
-### 3. 環境配置
+### 自定義觸發條件
 
-#### 方式一:環境變數
-在你的 `~/.zshrc` 或 `~/.bashrc` 文件中設定環境變數:
-
-```bash
-# GitHub 配置
-export GITHUB_ACCESS_TOKEN="your_github_access_token"
+只在特定分支審查：
+```yaml
+on:
+  pull_request:
+    types: [opened, synchronize]
+    branches:
+      - main
+      - develop
 ```
 
-設定完成後,重新載入環境變數:
-```bash
-source ~/.zshrc  # 或 source ~/.bashrc
+排除草稿 PR：
+```yaml
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+
+jobs:
+  ai-review:
+    if: github.event.pull_request.draft == false
+    # ...
 ```
 
-#### 方式二:使用 .env 文件
-複製 `.env.example` 為 `.env`:
-```bash
-cp .env.example .env
+### 使用輸出
+
+```yaml
+- name: AI Code Review
+  id: review
+  uses: 5G-HarryLu/github-ai-code-review@v1
+  with:
+    gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
+
+- name: Check review result
+  if: steps.review.outputs.review-posted == 'true'
+  run: |
+    echo "Review posted successfully!"
+    echo "Comment URL: ${{ steps.review.outputs.comment-url }}"
 ```
 
-編輯 `.env` 文件並填入你的 GitHub Access Token:
-```
-GITHUB_ACCESS_TOKEN=your_github_access_token
-```
+---
 
-### 4. 編譯和啟動
-```bash
-# 編譯
-npm run build
+## 🎯 審查項目
 
-# 開發模式
-npm run dev
+AI 會從以下方面進行審查：
 
-# 生產模式
-npm start
-```
+1. **程式碼品質** 🎯
+   - 命名規範
+   - 程式碼結構
+   - 可讀性
 
-### 5. Claude 配置
-在你的 Claude 設定中加入此 MCP 伺服器:
+2. **潛在問題** 🐛
+   - Bug 檢測
+   - 邊界條件處理
+   - 錯誤處理
+
+3. **安全性** 🔒
+   - 安全漏洞
+   - 敏感資訊洩露
+   - 輸入驗證
+
+4. **性能** ⚡
+   - 演算法效率
+   - 資源使用
+   - 優化建議
+
+5. **測試覆蓋** 🧪
+   - 測試完整性
+   - 測試品質
+
+6. **最佳實踐** 📚
+   - 程式設計規範
+   - 設計模式
+   - 架構建議
+
+7. **文檔註釋** 📖
+   - 程式碼註釋
+   - API 文檔
+   - 可維護性
+
+---
+
+## 💡 審查風格
+
+### 有問題時（火爆模式）🔥
+- 😡 直接批評，毫不留情
+- 💢 使用「垃圾」、「菜鳥」等犀利詞彙
+- 🔥 要求「退回去重寫」、「這什麼鬼東西」
+- 😤 尖銳犀利，直擊要害
+
+### 寫得好時（霸氣誇獎）💪
+- 💪 「不錯，這才像樣！」
+- 🔥 「寫得很好，繼續保持！」
+- 😤 「這次做得可以，別讓我失望！」
+- 💯 「非常好！就是要這樣寫！」
+
+---
+
+## 🛠️ MCP Server 模式
+
+除了作為 GitHub Action 使用，本專案也可以作為 MCP Server 在 Claude Desktop 中使用。
+
+### 設置 MCP Server
+
+在 Claude Desktop 配置文件中添加：
 
 ```json
 {
   "mcpServers": {
-    "github-mcp": {
-      "command": "yarn",
-      "args": ["dev"],
-      "cwd": "/path/to/github-mcp"
+    "github-ai-review": {
+      "command": "node",
+      "args": ["/path/to/github-ai-code-review/dist/index.js"],
+      "env": {
+        "GITHUB_ACCESS_TOKEN": "your-github-token"
+      }
     }
   }
 }
 ```
 
-## 使用指南
+### MCP Server 功能
 
-### GitHub 基本操作
+- **倉庫管理**：列出、查看和管理 GitHub 倉庫
+- **PR 操作**：獲取 PR 詳情、文件變更、評論
+- **Issues 管理**：創建、更新和查看 Issues
+- **提交歷史**：查看和分析 Git 提交記錄
+- **文件讀取**：讀取倉庫中的文件內容
+- **程式碼 Diff**：分析 PR 的程式碼變更
 
-#### 列出倉庫
-```
-使用 github_get_repositories 工具列出您的 GitHub 倉庫
-```
+詳細的 MCP Server 使用說明請參考 [USAGE.md](./USAGE.md)
 
-#### 查看提交歷史
-```
-使用 github_get_commits 工具查看倉庫的提交歷史
-參數:
-- repository: 倉庫標識 (格式: owner/repo)
-- sha: 分支名稱 (可選)
-- since/until: 時間範圍 (可選)
-```
+---
 
-#### 監控 GitHub Actions
-```
-使用 github_get_workflow_runs 工具查看工作流運行狀態
-使用 github_get_workflow_run_jobs 工具查看具體任務
+## 🔧 本地開發
+
+### 克隆專案
+```bash
+git clone https://github.com/5G-HarryLu/github-ai-code-review.git
+cd github-ai-code-review
 ```
 
-#### 管理 Issues 和 PR
-```
-使用 github_create_issue 創建新問題
-使用 github_create_pull_request 創建 Pull Request
-```
-
-#### 評論功能
-```
-使用 github_create_pr_comment 在 PR 中發表評論
-使用 github_create_issue_comment 在 Issue 中發表評論
+### 安裝依賴
+```bash
+npm install
 ```
 
-## 獲取 GitHub Access Token
-
-1. 登入 GitHub
-2. 前往 Settings > Developer settings > Personal access tokens > Tokens (classic)
-3. 點擊 "Generate new token (classic)"
-4. 選擇必要的權限:
-   - `repo` - 完整的倉庫控制權限
-   - `workflow` - 更新 GitHub Actions 工作流
-   - `read:org` - 讀取組織和團隊成員資訊
-   - `write:discussion` - 讀寫討論
-5. 生成並複製 Token
-
-## 支援的工具
-
-### 倉庫操作
-- `github_get_repositories` - 獲取倉庫列表
-- `github_get_repository` - 獲取倉庫詳情
-- `github_get_file_content` - 讀取文件內容
-
-### 提交操作
-- `github_get_commits` - 獲取提交歷史
-- `github_get_commit` - 獲取提交詳情
-
-### GitHub Actions
-- `github_get_workflow_runs` - 獲取工作流運行列表
-- `github_get_workflow_run` - 獲取工作流運行詳情
-- `github_get_workflow_run_jobs` - 獲取工作流任務
-- `github_get_job_logs` - 獲取任務日誌
-
-### Issues
-- `github_get_issues` - 獲取問題列表
-- `github_get_issue` - 獲取問題詳情
-- `github_create_issue` - 創建新問題
-- `github_get_issue_comments` - 獲取問題評論
-- `github_create_issue_comment` - 發表問題評論
-
-### Pull Requests
-- `github_get_pull_requests` - 獲取 PR 列表
-- `github_get_pull_request` - 獲取 PR 詳情
-- `github_create_pull_request` - 創建 PR
-- `github_get_pr_files` - 獲取 PR 文件變更
-- `github_get_pr_comments` - 獲取 PR 評論
-- `github_create_pr_comment` - 發表 PR 評論
-
-## 範例使用案例
-
-### CI/CD 監控
-```
-1. 查看最近的工作流運行 → github_get_workflow_runs
-2. 檢查失敗的任務 → github_get_workflow_run_jobs
-3. 分析失敗日誌 → github_get_job_logs
-4. 創建修復 Issue → github_create_issue
+### 構建專案
+```bash
+npm run build
 ```
 
-### Pull Request 工作流
-```
-1. 查看最近的 PR → github_get_pull_requests
-2. 檢查特定 PR → github_get_pull_request
-3. 查看文件變更 → github_get_pr_files
-4. 添加評論回饋 → github_create_pr_comment
-```
+### 測試 Action（需要環境變數）
+```bash
+export GEMINI_API_KEY="your-api-key"
+export GITHUB_ACCESS_TOKEN="your-github-token"
+export GITHUB_REPOSITORY="owner/repo"
+export PR_NUMBER="1"
 
-### Issue 管理
-```
-1. 查看開放的 Issues → github_get_issues
-2. 查看特定 Issue → github_get_issue
-3. 創建新 Issue → github_create_issue
-4. 添加評論 → github_create_issue_comment
+node ai-code-reviewer.js
 ```
 
-## 故障排除
+---
 
-### 常見問題
+## 📊 使用限制
 
-1. **GitHub API 連接失敗**
-   - 檢查 `GITHUB_ACCESS_TOKEN` 是否正確
-   - 確認 Token 有足夠的權限
-   - 檢查網絡連接
+### Gemini API 免費配額
+- **每天**：1500 次請求
+- **每分鐘**：15 次請求
+- **完全免費**，無需信用卡
 
-2. **API 速率限制**
-   - GitHub API 有速率限制
-   - 認證用戶:每小時 5000 次請求
-   - 未認證用戶:每小時 60 次請求
+### 建議
+- 小型團隊：完全夠用
+- 大型團隊：考慮限制觸發條件或升級 API 配額
 
-3. **MCP 伺服器無法啟動**
-   - 檢查 Node.js 版本 (建議 Node.js 18+)
-   - 確認所有依賴都已安裝
-   - 查看錯誤日誌
+---
 
-### 日誌和偵錯
-伺服器啟動時會在 stderr 輸出日誌:
+## 📝 範例
+
+### 審查評論示例
+
+```markdown
+## 🔥 火爆辛辣 AI Code Review 來啦！
+
+### 📋 總體評價
+⚠️ 這程式碼有些問題，需要改進！
+
+### 🎯 程式碼品質
+❌ **auth.js 第 45 行**：這什麼垃圾命名？`getData` 能再模糊一點嗎？改成 `fetchUserAuthData` ！
+
+💪 **config.js 第 12 行**：不錯！環境變數處理得很專業，繼續保持！
+
+### 🐛 潛在問題
+😡 **api.js 第 78 行**：連錯誤處理都不寫？菜鳥！加上 try-catch 給我！
+
+### 🔒 安全性
+🚨 **database.js 第 23 行**：SQL 注入漏洞！這是 2025 年，不是石器時代！用 prepared statements！
+
+### 💡 總結
+整體還行，但有幾個嚴重問題必須修正。改完再來！
 ```
-GitHub MCP server 已啟動
-```
 
-## 倉庫標識格式
+---
 
-所有需要指定倉庫的操作都使用 `owner/repo` 格式,例如:
-- `octocat/Hello-World`
-- `facebook/react`
-- `microsoft/vscode`
+## 🤝 貢獻
 
-## 貢獻指南
+歡迎提交 Issue 和 Pull Request！
 
-歡迎貢獻!請:
-1. Fork 此專案
-2. 創建功能分支
-3. 提交您的變更
-4. 創建 Pull Request
+## 📄 授權
 
-## 授權條款
+MIT License
 
-MIT License - 詳見 LICENSE 文件
+## 🔗 相關連結
+
+- [Google Gemini API](https://ai.google.dev/)
+- [GitHub Actions 文檔](https://docs.github.com/en/actions)
+- [MCP Protocol](https://modelcontextprotocol.io/)
+- [詳細使用說明](./ACTION_README.md)
+
+---
+
+🤖 由 [5G-HarryLu](https://github.com/5G-HarryLu) 開發維護

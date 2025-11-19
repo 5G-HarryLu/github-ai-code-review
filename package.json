@@ -1,5 +1,5 @@
 {
-  "name": "github-mcp",
+  "name": "github-ai-code-review",
   "version": "1.0.0",
   "description": "AI Code Review GitHub Action powered by Google Gemini and MCP server for GitHub operations",
   "main": "dist/index.js",
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/BBsBrezz/Gitlab-MCP.git"
+    "url": "https://github.com/5G-HarryLu/github-ai-code-review.git"
   },
   "keywords": [
     "github",
@@ -24,12 +24,12 @@
     "automation",
     "pull-request"
   ],
-  "author": "BBsBrezz",
+  "author": "5G-HarryLu",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/BBsBrezz/Gitlab-MCP/issues"
+    "url": "https://github.com/5G-HarryLu/github-ai-code-review/issues"
   },
-  "homepage": "https://github.com/BBsBrezz/Gitlab-MCP#readme",
+  "homepage": "https://github.com/5G-HarryLu/github-ai-code-review#readme",
   "files": [
     "dist/**/*",
     "src/**/*",

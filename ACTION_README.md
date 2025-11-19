@@ -48,7 +48,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: AI Code Review
-        uses: BBsBrezz/Gitlab-MCP@v1
+        uses: 5G-HarryLu/github-ai-code-review@v1
         with:
           gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -62,7 +62,7 @@ jobs:
 
 ```yaml
 - name: AI Code Review
-  uses: BBsBrezz/Gitlab-MCP@v1
+  uses: 5G-HarryLu/github-ai-code-review@v1
   with:
     # 必填：Gemini API Key
     gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
@@ -106,7 +106,7 @@ jobs:
 ```yaml
 - name: AI Code Review
   id: review
-  uses: BBsBrezz/Gitlab-MCP@v1
+  uses: 5G-HarryLu/github-ai-code-review@v1
   with:
     gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
 
@@ -173,8 +173,8 @@ AI 會從以下方面進行審查：
 
 ### 克隆專案
 ```bash
-git clone https://github.com/BBsBrezz/Gitlab-MCP.git
-cd Gitlab-MCP
+git clone https://github.com/5G-HarryLu/github-ai-code-review.git
+cd github-ai-code-review
 ```
 
 ### 安裝依賴
@@ -215,9 +215,9 @@ node ai-code-reviewer.js
 ```json
 {
   "mcpServers": {
-    "github-mcp": {
+    "github-ai-review": {
       "command": "node",
-      "args": ["/path/to/Gitlab-MCP/dist/index.js"],
+      "args": ["/path/to/github-ai-code-review/dist/index.js"],
       "env": {
         "GITHUB_ACCESS_TOKEN": "your-token"
       }
@@ -267,4 +267,4 @@ MIT License
 
 ---
 
-🤖 由 [BBsBrezz](https://github.com/BBsBrezz) 開發維護
+🤖 由 [5G-HarryLu](https://github.com/5G-HarryLu) 開發維護

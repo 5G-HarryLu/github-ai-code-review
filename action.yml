@@ -1,6 +1,6 @@
 name: 'AI Code Review with Gemini'
 description: 'Automated code review using Google Gemini AI with aggressive and direct feedback style'
-author: 'BBsBrezz'
+author: '5G-HarryLu'
 
 inputs:
   gemini-api-key:

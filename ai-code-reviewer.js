@@ -208,7 +208,7 @@ async function postReview(review) {
 ${review}
 
 ---
-_🤖 Powered by [AI Code Review Action](https://github.com/BBsBrezz/Gitlab-MCP) with Google Gemini 2.0_
+_🤖 Powered by [AI Code Review Action](https://github.com/5G-HarryLu/github-ai-code-review) with Google Gemini 2.0_
 `;
 
   try {

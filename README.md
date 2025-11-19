@@ -5,12 +5,13 @@
 ## ✨ 特色功能
 
 ### 🚀 GitHub Action 模式
-- 🤖 **Google Gemini 2.0 驅動**：使用最新的 Gemini 2.0 Flash Experimental 模型
+- 🤖 **Google Gemini 驅動**：默認使用穩定的 Gemini 1.5 Flash 模型
 - 🔥 **火爆辛辣風格**：直接、犀利的審查反饋，不拐彎抹角
 - 📊 **全方位審查**：涵蓋程式碼品質、安全性、性能、測試等多個維度
 - 🚀 **自動化執行**：PR 創建或更新時自動觸發審查
 - 💬 **智能評論**：自動在 PR 中發布詳細的審查評論
 - 🆓 **免費使用**：基於 Google Gemini 免費配額（每天 1500 次請求）
+- ⚙️ **模型可選**：支持多種 Gemini 模型（1.5-flash、1.5-pro、2.0-flash-exp）
 
 ### 🔧 MCP Server 模式
 - 📋 **GitHub API 完整整合**：倉庫管理、PR、Issues、Commits 等
@@ -60,6 +61,7 @@ jobs:
         with:
           gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          # gemini-model: gemini-1.5-flash  # 默認值，可選配置
 ```
 
 完成！🎉 現在每次創建或更新 PR 時，AI 都會自動進行程式碼審查。
@@ -76,6 +78,9 @@ jobs:
   with:
     # 必填：Gemini API Key
     gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
+
+    # 選填：Gemini 模型（默認：gemini-1.5-flash）
+    gemini-model: gemini-1.5-flash  # 或 gemini-1.5-pro
 
     # 選填：GitHub Token（默認使用內建 token）
     github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -257,9 +262,17 @@ node ai-code-reviewer.js
 - **每分鐘**：15 次請求
 - **完全免費**，無需信用卡
 
+### 模型選擇
+- **gemini-1.5-flash** ⭐（默認）：速度最快，配額最優，推薦日常使用
+- **gemini-1.5-pro**：分析更深入，適合複雜審查
+- **gemini-2.0-flash-exp** ⚠️：實驗性，配額受限，不推薦生產使用
+
+詳細模型對比請參考 [MODEL_SELECTION.md](MODEL_SELECTION.md)
+
 ### 建議
-- 小型團隊：完全夠用
+- 小型團隊：使用默認的 gemini-1.5-flash，免費配額完全夠用
 - 大型團隊：考慮限制觸發條件或升級 API 配額
+- 遇到配額錯誤：確保使用 gemini-1.5-flash（默認值）
 
 ---
 

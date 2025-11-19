@@ -31,13 +31,13 @@ jobs:
       - name: Run AI Code Review
         env:
           CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
-          CLAUDE_MODEL: ${{ secrets.CLAUDE_MODEL || 'claude-sonnet-4-20250514' }}
+          CLAUDE_MODEL: ${{ secrets.CLAUDE_MODEL || 'claude-sonnet-4-5-20250929' }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           echo "🤖 啟動 AI Code Review Agent..."
-          echo "🔮 AI 模型: Claude ${CLAUDE_MODEL:-Sonnet 4}"
+          echo "🔮 AI 模型: Claude ${CLAUDE_MODEL:-Sonnet 4.5}"
           echo "📋 Repository: $GITHUB_REPOSITORY"
           echo "🔢 PR Number: $PR_NUMBER"
           echo ""

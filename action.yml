@@ -7,9 +7,9 @@ inputs:
     description: 'Claude API Key (get from https://console.anthropic.com/)'
     required: true
   claude-model:
-    description: 'Claude model to use (claude-sonnet-4-20250514, claude-3-7-sonnet-20250219, claude-3-5-sonnet-20241022, claude-3-5-haiku-20241022)'
+    description: 'Claude model to use (claude-sonnet-4-5-20250929, claude-sonnet-4-20250514, claude-3-7-sonnet-20250219, claude-3-5-sonnet-20241022, claude-3-5-haiku-20241022)'
     required: false
-    default: 'claude-sonnet-4-20250514'
+    default: 'claude-sonnet-4-5-20250929'
   github-token:
     description: 'GitHub Token for API access'
     required: false

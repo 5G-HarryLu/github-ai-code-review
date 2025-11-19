@@ -33,10 +33,11 @@ if (!REPO || !PR_NUMBER) {
   process.exit(1);
 }
 
-// 初始化 Gemini
+// 初始化 Gemini - 支持通過環境變數選擇模型
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-1.5-flash"; // 默認使用穩定的 1.5-flash
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({
-  model: "gemini-2.0-flash-exp",  // 使用 Gemini 2.0 Flash (實驗版本)
+  model: GEMINI_MODEL,
 });
 
 const githubClient = new GitHubClient();
@@ -175,25 +176,52 @@ ${commentsInfo}
 }
 
 /**
- * 使用 Gemini API 分析程式碼
+ * 使用 Gemini API 分析程式碼（帶重試機制）
  */
-async function analyzeWithGemini(prompt) {
+async function analyzeWithGemini(prompt, retries = 2) {
   console.log('🤖 Google Gemini AI 正在分析程式碼...\n');
+  console.log(`📊 使用模型: ${GEMINI_MODEL}\n`);
 
-  try {
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const review = response.text();
+  for (let attempt = 1; attempt <= retries + 1; attempt++) {
+    try {
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const review = response.text();
 
-    console.log('✅ AI 分析完成\n');
+      console.log('✅ AI 分析完成\n');
+      return review;
 
-    return review;
-  } catch (error) {
-    console.error('❌ Gemini API 調用失敗:', error.message);
-    if (error.response) {
-      console.error('錯誤詳情:', JSON.stringify(error.response.data, null, 2));
+    } catch (error) {
+      const isQuotaError = error.message.includes('429') ||
+                          error.message.includes('quota') ||
+                          error.message.includes('rate limit');
+
+      console.error(`❌ Gemini API 調用失敗 (嘗試 ${attempt}/${retries + 1}):`, error.message);
+
+      if (isQuotaError) {
+        console.error('\n⚠️  配額限制錯誤建議:');
+        console.error('1. 檢查 API 使用量: https://aistudio.google.com/app/apikey');
+        console.error('2. 等待幾分鐘後重試（每分鐘 15 次限制）');
+        console.error('3. 考慮切換到 gemini-1.5-flash 模型（更穩定的配額）');
+        console.error('4. 檢查是否需要升級 API 計劃\n');
+
+        // 配額錯誤不重試，直接失敗
+        throw error;
+      }
+
+      // 非配額錯誤，且還有重試次數
+      if (attempt <= retries) {
+        const waitTime = attempt * 2; // 指數退避：2秒、4秒
+        console.log(`⏳ ${waitTime} 秒後重試...\n`);
+        await new Promise(resolve => setTimeout(resolve, waitTime * 1000));
+      } else {
+        // 最後一次嘗試也失敗了
+        if (error.response) {
+          console.error('錯誤詳情:', JSON.stringify(error.response.data, null, 2));
+        }
+        throw error;
+      }
     }
-    throw error;
   }
 }
 
@@ -248,7 +276,7 @@ async function main() {
   console.log('🚀 AI Code Review Agent 啟動\n');
   console.log(`📋 倉庫: ${REPO}`);
   console.log(`🔢 PR: #${PR_NUMBER}`);
-  console.log(`🤖 AI 模型: Gemini 2.0 Flash Experimental\n`);
+  console.log(`🤖 AI 模型: ${GEMINI_MODEL}\n`);
   console.log('═══════════════════════════════════════\n');
 
   try {

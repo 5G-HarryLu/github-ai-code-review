@@ -34,8 +34,18 @@ if (!REPO || !PR_NUMBER) {
 }
 
 // 初始化 Gemini - 支持通過環境變數選擇模型
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-1.5-flash"; // 默認使用穩定的 1.5-flash
+// 最新可用模型：gemini-2.0-flash-thinking-exp, gemini-1.5-pro, gemini-1.5-flash
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash-thinking-exp"; // 使用最新的思考模型
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+
+console.log(`🔧 準備初始化 Gemini 模型: ${GEMINI_MODEL}`);
+
+// 添加 API key 驗證
+if (GEMINI_API_KEY.length < 20 || !GEMINI_API_KEY.startsWith('AIza')) {
+  console.error('⚠️  警告: GEMINI_API_KEY 格式可能不正確');
+  console.error('   正確格式應該以 "AIza" 開頭，長度約 40 個字符');
+}
+
 const model = genAI.getGenerativeModel({
   model: GEMINI_MODEL,
 });
@@ -176,53 +186,104 @@ ${commentsInfo}
 }
 
 /**
- * 使用 Gemini API 分析程式碼（帶重試機制）
+ * 使用 Gemini API 分析程式碼（帶重試機制和模型降級）
  */
 async function analyzeWithGemini(prompt, retries = 2) {
   console.log('🤖 Google Gemini AI 正在分析程式碼...\n');
   console.log(`📊 使用模型: ${GEMINI_MODEL}\n`);
 
-  for (let attempt = 1; attempt <= retries + 1; attempt++) {
-    try {
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const review = response.text();
+  // 模型降級順序
+  const fallbackModels = [
+    GEMINI_MODEL,
+    'gemini-1.5-pro',
+    'gemini-1.5-flash'
+  ].filter((v, i, a) => a.indexOf(v) === i); // 去重
 
-      console.log('✅ AI 分析完成\n');
-      return review;
+  for (const modelName of fallbackModels) {
+    console.log(`🔄 嘗試模型: ${modelName}`);
 
-    } catch (error) {
-      const isQuotaError = error.message.includes('429') ||
-                          error.message.includes('quota') ||
-                          error.message.includes('rate limit');
+    const currentModel = genAI.getGenerativeModel({ model: modelName });
 
-      console.error(`❌ Gemini API 調用失敗 (嘗試 ${attempt}/${retries + 1}):`, error.message);
+    for (let attempt = 1; attempt <= retries + 1; attempt++) {
+      try {
+        const result = await currentModel.generateContent(prompt);
+        const response = await result.response;
+        const review = response.text();
 
-      if (isQuotaError) {
-        console.error('\n⚠️  配額限制錯誤建議:');
-        console.error('1. 檢查 API 使用量: https://aistudio.google.com/app/apikey');
-        console.error('2. 等待幾分鐘後重試（每分鐘 15 次限制）');
-        console.error('3. 考慮切換到 gemini-1.5-flash 模型（更穩定的配額）');
-        console.error('4. 檢查是否需要升級 API 計劃\n');
+        console.log(`✅ AI 分析完成（使用模型: ${modelName}）\n`);
+        return review;
 
-        // 配額錯誤不重試，直接失敗
-        throw error;
-      }
+      } catch (error) {
+        const isQuotaError = error.message.includes('429') ||
+                            error.message.includes('quota') ||
+                            error.message.includes('rate limit');
 
-      // 非配額錯誤，且還有重試次數
-      if (attempt <= retries) {
-        const waitTime = attempt * 2; // 指數退避：2秒、4秒
-        console.log(`⏳ ${waitTime} 秒後重試...\n`);
-        await new Promise(resolve => setTimeout(resolve, waitTime * 1000));
-      } else {
-        // 最後一次嘗試也失敗了
-        if (error.response) {
-          console.error('錯誤詳情:', JSON.stringify(error.response.data, null, 2));
+        const isAuthError = error.message.includes('API key') ||
+                           error.message.includes('403') ||
+                           error.message.includes('401');
+
+        const isModelError = error.message.includes('models/') ||
+                            error.message.includes('not found') ||
+                            error.message.includes('404');
+
+        console.error(`❌ Gemini API 調用失敗 (模型: ${modelName}, 嘗試 ${attempt}/${retries + 1}):`, error.message);
+
+        // API Key 錯誤
+        if (isAuthError) {
+          console.error('\n🔑 API Key 錯誤:');
+          console.error('1. 檢查 GEMINI_API_KEY 是否正確設置');
+          console.error('2. 前往 https://aistudio.google.com/app/apikey 驗證你的 API key');
+          console.error('3. 確認 API key 有效且已啟用 Gemini API');
+          console.error('4. 確認 API key 格式正確（應以 "AIza" 開頭）\n');
+          throw error; // API key 錯誤無法重試
         }
-        throw error;
+
+        // 模型不存在錯誤
+        if (isModelError) {
+          console.error(`⚠️  模型 ${modelName} 不可用，嘗試降級到下一個模型...\n`);
+          break; // 跳出重試循環，嘗試下一個模型
+        }
+
+        // 配額錯誤
+        if (isQuotaError) {
+          console.error('\n⚠️  配額限制錯誤:');
+          console.error('1. 檢查 API 使用量: https://aistudio.google.com/app/apikey');
+          console.error('2. 免費配額：每天 1500 次，每分鐘 15 次');
+          console.error('3. 等待幾分鐘後重試');
+          console.error('4. 考慮升級到付費計劃\n');
+
+          // 嘗試降級模型
+          if (fallbackModels.indexOf(modelName) < fallbackModels.length - 1) {
+            console.log('🔄 嘗試使用配額更優的備用模型...\n');
+            break; // 跳到下一個模型
+          }
+          throw error;
+        }
+
+        // 一般錯誤，重試
+        if (attempt <= retries) {
+          const waitTime = attempt * 3; // 指數退避：3秒、6秒
+          console.log(`⏳ ${waitTime} 秒後重試...\n`);
+          await new Promise(resolve => setTimeout(resolve, waitTime * 1000));
+        } else {
+          // 最後一次嘗試也失敗，嘗試下一個模型
+          if (fallbackModels.indexOf(modelName) < fallbackModels.length - 1) {
+            console.error(`⚠️  模型 ${modelName} 重試失敗，降級到下一個模型...\n`);
+            break;
+          }
+
+          // 所有模型都失敗
+          if (error.response) {
+            console.error('錯誤詳情:', JSON.stringify(error.response.data, null, 2));
+          }
+          throw error;
+        }
       }
     }
   }
+
+  // 所有模型都嘗試失敗
+  throw new Error('所有 Gemini 模型都無法使用，請檢查 API key 和配額');
 }
 
 /**

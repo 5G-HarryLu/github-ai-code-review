@@ -7,9 +7,9 @@ inputs:
     description: 'Google Gemini API Key (get from https://makersuite.google.com/app/apikey)'
     required: true
   gemini-model:
-    description: 'Gemini model to use (gemini-1.5-flash, gemini-1.5-pro, gemini-2.0-flash-exp)'
+    description: 'Gemini model to use (gemini-2.0-flash-thinking-exp, gemini-1.5-pro, gemini-1.5-flash)'
     required: false
-    default: 'gemini-1.5-flash'
+    default: 'gemini-2.0-flash-thinking-exp'
   github-token:
     description: 'GitHub Token for API access'
     required: false

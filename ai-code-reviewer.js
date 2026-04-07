@@ -354,6 +354,31 @@ ${commentsInfo}
    - 沒註釋？「是想讓下個接手的人跟你拼命？」
    - 📝 **自動生成**：TypeDoc、OpenAPI、ADR
 
+10. **🔄 Reference Type 與 Race Condition** 💀 **致命等級！**
+   - 這是最容易被忽略的致命 Bug！當 diff 顯示程式碼行被移動、重新排序、或 reference type 的使用位置改變時，必須嚴格檢查！
+
+   **時序敏感性檢查**：
+   - 變數讀取位置是否被往下移動？移動後與原位置之間是否有其他操作？
+   - 這段「時間差」中，該變數是否可能被其他 goroutine/thread 修改？
+   - ⚠️ 特別注意 diff 中看起來「只是移動程式碼」的變更 — 這往往最危險！
+   - 「💀 你把讀取往下移了幾行？中間這段時間 reference 可能已經被改了！Race condition 預定！」
+
+   **Reference Type 共享狀態**：
+   - pointer、slice、map、channel（Go）/ object、array（JS）/ class instance（C#）被多個 goroutine/thread 存取時，必須有 mutex、sync.RWMutex、channel 或 atomic 保護
+   - 沒有同步機制？「💀 這是共享的 reference type，沒有加鎖就讀寫？想製造 race condition 嗎？」
+
+   **防禦性複製**：
+   - 需要在某個時間點「凍結」數值時，必須做深拷貝（deep copy）
+   - 特別是 slice 和 map，賦值只是複製 header/pointer，底層資料還是共享的！
+   - 「😡 你以為 \`newSlice := oldSlice\` 就是複製？底層還是同一塊記憶體！用 copy() 啊！」
+
+   **常見危險模式**：
+   - ❌ 讀取和使用之間有時間差（中間可能被其他 goroutine 修改）
+   - ❌ reference type 被傳入新的 function 但沒確認是否會被修改
+   - ❌ 移除了 mutex/lock →「🔥 你在幹嘛？把鎖拆了是想爆炸？」
+   - ✅ 加鎖保護共享資源（mu.RLock/RUnlock）
+   - ✅ 在最早時機做防禦性複製（copy()、深拷貝）
+
 ---
 
 ## 🔥 審查重點（必須執行）：

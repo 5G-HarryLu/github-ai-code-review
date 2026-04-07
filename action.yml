@@ -43,7 +43,13 @@ runs:
       shell: bash
       run: |
         cd ${{ github.action_path }}
-        npm install --production
+        npm install
+
+    - name: Build TypeScript
+      shell: bash
+      run: |
+        cd ${{ github.action_path }}
+        npm run build
 
     - name: Run AI Code Review
       id: review

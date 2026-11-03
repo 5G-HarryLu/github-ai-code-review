@@ -1,55 +1,27 @@
 name: AI Code Review
 
-# 當 PR 被創建或更新時觸發 AI 審查
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, synchronize, ready_for_review]
+
+concurrency:
+  group: ai-code-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
-  ai-code-review:
+  review:
+    if: ${{ !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
-
+    timeout-minutes: 15
     permissions:
       contents: read
       pull-requests: write
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      # The PR head, so call-stack line numbers match the diff; `uses: ./` runs the action from it.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          node-version: '20'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build TypeScript
-        run: npm run build
-
-      - name: Run AI Code Review
-        env:
-          CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
-          CLAUDE_MODEL: ${{ secrets.CLAUDE_MODEL || 'claude-opus-4-6' }}
-          GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: |
-          echo "🤖 啟動 AI Code Review Agent..."
-          echo "🔮 AI 模型: Claude ${CLAUDE_MODEL:-Sonnet 4.5}"
-          echo "📋 Repository: $GITHUB_REPOSITORY"
-          echo "🔢 PR Number: $PR_NUMBER"
-          echo ""
-
-          node ai-code-reviewer.js
-
-      - name: Upload Review Log
-        if: always()
-        uses: actions/upload-artifact@v4
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: ./
         with:
-          name: ai-code-review-log
-          path: |
-            *.log
-          retention-days: 30
-          if-no-files-found: ignore
+          claude-api-key: ${{ secrets.CLAUDE_API_KEY }}

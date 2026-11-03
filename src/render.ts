@@ -85,7 +85,7 @@ function headline(findings: Finding[]): string {
   const must = count('must_fix');
   const suggest = count('suggestion');
   const preExisting = findings.length - introduced.length;
-  const extra = preExisting > 0 ? `（另有 📦 既有的${PRIORITY_LABEL.must_fix.slice(2)} ${preExisting} 項，不是這次造成的，見下方）` : '';
+  const extra = preExisting > 0 ? `（另有 📦 既有的必須改善 ${preExisting} 項，不是這次造成的）` : '';
   if (must > 0) return `**${PRIORITY_LABEL.must_fix} ${must} 項 · ${PRIORITY_LABEL.suggestion} ${suggest} 項${extra}**`;
   if (suggest > 0) return `**✅ 沒有必須改善的項目 · ${PRIORITY_LABEL.suggestion} ${suggest} 項${extra}**`;
   return `**✅ 這次的變更沒有發現需要改善的地方${extra}**`;

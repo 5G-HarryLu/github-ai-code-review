@@ -84330,7 +84330,7 @@ function headline(findings) {
   const must = count("must_fix");
   const suggest = count("suggestion");
   const preExisting = findings.length - introduced.length;
-  const extra = preExisting > 0 ? `\uFF08\u53E6\u6709 \u{1F4E6} \u65E2\u6709\u7684${PRIORITY_LABEL.must_fix.slice(2)} ${preExisting} \u9805\uFF0C\u4E0D\u662F\u9019\u6B21\u9020\u6210\u7684\uFF0C\u898B\u4E0B\u65B9\uFF09` : "";
+  const extra = preExisting > 0 ? `\uFF08\u53E6\u6709 \u{1F4E6} \u65E2\u6709\u7684\u5FC5\u9808\u6539\u5584 ${preExisting} \u9805\uFF0C\u4E0D\u662F\u9019\u6B21\u9020\u6210\u7684\uFF09` : "";
   if (must > 0) return `**${PRIORITY_LABEL.must_fix} ${must} \u9805 \xB7 ${PRIORITY_LABEL.suggestion} ${suggest} \u9805${extra}**`;
   if (suggest > 0) return `**\u2705 \u6C92\u6709\u5FC5\u9808\u6539\u5584\u7684\u9805\u76EE \xB7 ${PRIORITY_LABEL.suggestion} ${suggest} \u9805${extra}**`;
   return `**\u2705 \u9019\u6B21\u7684\u8B8A\u66F4\u6C92\u6709\u767C\u73FE\u9700\u8981\u6539\u5584\u7684\u5730\u65B9${extra}**`;

@@ -6,7 +6,7 @@ import type { ChangedFunction } from './callgraph.ts';
 import type { Selection, SkippedFile } from './context.ts';
 import { COMMENT_MARKER, type PullRequest, type Repo } from './github.ts';
 import { codeBlock, sanitize, sanitizeInline } from './markdown.ts';
-import { type Aspect, PRIORITIES, type Priority, type ReviewOutput, type ReviewResult } from './review.ts';
+import { type Aspect, ORIGINS, PRIORITIES, type Priority, type ReviewOutput, type ReviewResult } from './review.ts';
 
 /** GitHub rejects comments longer than 65,536 characters; keep headroom. */
 const MAX_BODY = 65_000;
@@ -16,6 +16,8 @@ const MAX_OVERVIEW = 400;
 const MAX_TITLE = 80;
 const MAX_TEXT = 500;
 const MAX_SUGGESTED_CODE = 2000;
+const MAX_NOT_JUDGED = 5;
+const MAX_NOT_JUDGED_TEXT = 200;
 
 const ASPECT_LABEL: Record<Aspect, string> = {
   design: '🏗️ 程式設計',
@@ -28,6 +30,7 @@ const ASPECT_LABEL: Record<Aspect, string> = {
 const PRIORITY_LABEL: Record<Priority, string> = { must_fix: '⛔ 必須改善', suggestion: '💡 建議改善' };
 
 type Finding = ReviewOutput['findings'][number];
+type NotJudged = ReviewOutput['not_judged'];
 /** Lines the action read, by file: the diff plus every call-graph snippet. */
 type Sources = Map<string, Map<number, string>>;
 
@@ -75,13 +78,17 @@ function quote(lines: Map<number, string> | undefined, start: number, end: numbe
   return out.map(l => (l === '…' ? l : l.slice(indent))).join('\n');
 }
 
+/** The verdict counts only what this PR introduced; pre-existing problems are mentioned, not counted. */
 function headline(findings: Finding[]): string {
-  const count = (p: Priority) => findings.filter(f => f.priority === p).length;
+  const introduced = findings.filter(f => f.origin === 'introduced');
+  const count = (p: Priority) => introduced.filter(f => f.priority === p).length;
   const must = count('must_fix');
   const suggest = count('suggestion');
-  if (must > 0) return `**${PRIORITY_LABEL.must_fix} ${must} 項 · ${PRIORITY_LABEL.suggestion} ${suggest} 項**`;
-  if (suggest > 0) return `**✅ 沒有必須改善的項目 · ${PRIORITY_LABEL.suggestion} ${suggest} 項**`;
-  return '**✅ 這次的變更沒有發現需要改善的地方**';
+  const preExisting = findings.length - introduced.length;
+  const extra = preExisting > 0 ? `（另有 📦 既有的必須改善 ${preExisting} 項，不是這次造成的）` : '';
+  if (must > 0) return `**${PRIORITY_LABEL.must_fix} ${must} 項 · ${PRIORITY_LABEL.suggestion} ${suggest} 項${extra}**`;
+  if (suggest > 0) return `**✅ 沒有必須改善的項目 · ${PRIORITY_LABEL.suggestion} ${suggest} 項${extra}**`;
+  return `**✅ 這次的變更沒有發現需要改善的地方${extra}**`;
 }
 
 function renderFinding(repo: Repo, sha: string, sources: Sources, f: Finding, index: number): string {
@@ -138,14 +145,24 @@ function renderCallStacks(repo: Repo, sha: string, sources: Sources, graph: Chan
   return parts;
 }
 
-function scope(selection: Selection, graph: ChangedFunction[]): string {
+function notJudgedList(items: NotJudged): string {
+  const behavior = (text: string) => sanitizeInline(text, MAX_NOT_JUDGED_TEXT).replace(/[。.．]+$/, '');
+  const lines = items.slice(0, MAX_NOT_JUDGED).map(n => `- ${behavior(n.behavior)}：${sanitizeInline(n.reason, MAX_NOT_JUDGED_TEXT)}`);
+  if (items.length > MAX_NOT_JUDGED) lines.push(`- 另有 ${items.length - MAX_NOT_JUDGED} 則沒有列出`);
+  return `**沒有判斷的部分**（AI 考慮過，但沒有下結論）\n\n${lines.join('\n')}`;
+}
+
+function scope(selection: Selection, graph: ChangedFunction[], notJudged: NotJudged): string {
   const skipped = selection.skipped.length + selection.unlisted;
   const reasons = new Map<string, number>();
   for (const s of selection.skipped) reasons.set(s.reason, (reasons.get(s.reason) ?? 0) + 1);
   if (selection.unlisted > 0) reasons.set('GitHub API 沒有列出', selection.unlisted);
   const summary = [...reasons].map(([reason, n]) => `${reason} ${n}`).join('、');
   const line = `審查範圍：送審 ${selection.files.length} 個檔案、追蹤 ${graph.length} 個被修改的函式${skipped > 0 ? `；未送審 ${skipped} 個（${summary}）` : ''}。只依程式碼判讀，沒有執行程式或測試。`;
-  return skipped > 0 ? `${line}\n\n${skippedList(selection.skipped)}` : line;
+  const parts = [line];
+  if (notJudged.length > 0) parts.push(notJudgedList(notJudged));
+  if (skipped > 0) parts.push(skippedList(selection.skipped));
+  return parts.join('\n\n');
 }
 
 function skippedList(skipped: SkippedFile[]): string {
@@ -155,32 +172,46 @@ function skippedList(skipped: SkippedFile[]): string {
 }
 
 export function render(repo: Repo, pr: PullRequest, selection: Selection, graph: ChangedFunction[], review: ReviewResult): string {
-  const rank = (f: Finding) => PRIORITIES.indexOf(f.priority);
-  const sorted = [...review.output.findings].sort((a, b) => rank(a) - rank(b));
+  // Pre-existing problems are reported only when they cause wrong results; enforce it here, not only in the prompt.
+  const findings = review.output.findings.filter(f => f.origin === 'introduced' || f.priority === 'must_fix');
+  const reported: ReviewResult = { ...review, output: { ...review.output, findings } };
 
-  // Drop findings from the end (suggestions first) until the comment fits.
+  // This PR's problems before pre-existing ones, must-fix before suggestions within each.
+  const rank = (f: Finding) => ORIGINS.indexOf(f.origin) * PRIORITIES.length + PRIORITIES.indexOf(f.priority);
+  const sorted = [...findings].sort((a, b) => rank(a) - rank(b));
+
+  // Drop findings from the end (pre-existing, then suggestions) until the comment fits.
   for (let shown = sorted.length; ; shown--) {
-    const body = compose(repo, pr, selection, graph, review, sorted.slice(0, shown));
+    const body = compose(repo, pr, selection, graph, reported, sorted.slice(0, shown));
     if (body.length <= MAX_BODY || shown === 0) return body;
   }
 }
 
 function compose(repo: Repo, pr: PullRequest, selection: Selection, graph: ChangedFunction[], review: ReviewResult, shown: Finding[]): string {
-  const { overview, call_stacks, findings } = review.output;
+  const { overview, call_stacks, findings, not_judged } = review.output;
   const sources = collectSources(selection, graph);
   const sha = pr.headSha;
 
   const parts = [COMMENT_MARKER, '## 🤖 AI Code Review', headline(findings), sanitize(overview, MAX_OVERVIEW)];
-  shown.forEach((f, i) => parts.push(renderFinding(repo, sha, sources, f, i + 1)));
-  if (findings.length > shown.length) parts.push(`另有 ${findings.length - shown.length} 則建議因為留言長度上限沒有列出。`);
+  const introduced = shown.filter(f => f.origin === 'introduced');
+  const preExisting = shown.filter(f => f.origin === 'pre_existing');
+  introduced.forEach((f, i) => parts.push(renderFinding(repo, sha, sources, f, i + 1)));
+  if (preExisting.length > 0) {
+    const items = preExisting.map((f, i) => renderFinding(repo, sha, sources, f, introduced.length + i + 1));
+    parts.push(
+      '## 📦 既有問題',
+      `<details><summary>${preExisting.length} 項不是這次修改造成的，不列入上面的結論，建議另開 PR 處理</summary>\n\n${items.join('\n\n')}\n\n</details>`,
+    );
+  }
+  if (findings.length > shown.length) parts.push(`另有 ${findings.length - shown.length} 則發現因為留言長度上限沒有列出。`);
   parts.push(...renderCallStacks(repo, sha, sources, graph, call_stacks));
-  parts.push('---', scope(selection, graph));
+  parts.push('---', scope(selection, graph, not_judged));
   parts.push(`<sub>commit ${code(sha.slice(0, 7))} · 模型 ${code(review.model)} · AI review 只供參考，不能取代人工 review</sub>`);
   return parts.join('\n\n');
 }
 
 export function renderNothingToReview(pr: PullRequest, selection: Selection): string {
-  const parts = [COMMENT_MARKER, '## 🤖 AI Code Review', '這次的變更沒有可以送審的程式碼。', '---', scope(selection, [])];
+  const parts = [COMMENT_MARKER, '## 🤖 AI Code Review', '這次的變更沒有可以送審的程式碼。', '---', scope(selection, [], [])];
   parts.push(`<sub>commit ${code(pr.headSha.slice(0, 7))}</sub>`);
   return parts.join('\n\n');
 }

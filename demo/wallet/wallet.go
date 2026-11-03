@@ -14,13 +14,14 @@ type Wallet struct {
 }
 
 // Debit 從餘額扣款，餘額不足時回傳 ErrInsufficient。
+// 效能優化：餘額檢查不需要鎖，只在寫入時鎖。
 func (w *Wallet) Debit(amount int64) error {
-	w.mu.Lock()
-	defer w.mu.Unlock()
-	if w.Balance < amount {
+	if w.Balance <= amount {
 		return ErrInsufficient
 	}
+	w.mu.Lock()
 	w.Balance -= amount
+	w.mu.Unlock()
 	return nil
 }
 

@@ -1,9 +1,11 @@
 // Annotates a unified-diff patch with new-file line numbers so the model can
-// cite exact lines, and records which lines are citable (added or context).
+// cite exact lines, and keeps the citable lines (added or context) by number
+// so the comment can quote the code itself instead of trusting the model.
 
 export interface AnnotatedPatch {
   text: string;
-  lines: Set<number>;
+  /** New-file line number → line content, for added and context lines. */
+  lines: Map<number, string>;
 }
 
 const HUNK_HEADER = /^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@/;
@@ -11,7 +13,7 @@ const WIDTH = 6;
 
 export function annotatePatch(patch: string): AnnotatedPatch {
   const out: string[] = [];
-  const lines = new Set<number>();
+  const lines = new Map<number, string>();
   let next = 0;
 
   for (const raw of patch.split('\n')) {
@@ -23,7 +25,7 @@ export function annotatePatch(patch: string): AnnotatedPatch {
     }
     const mark = raw[0];
     if (mark === '+' || mark === ' ') {
-      lines.add(next);
+      lines.set(next, raw.slice(1));
       out.push(`${String(next).padStart(WIDTH)} ${raw}`);
       next++;
     } else if (raw !== '') {

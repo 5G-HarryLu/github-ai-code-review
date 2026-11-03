@@ -12,7 +12,7 @@ export interface ReviewFile {
   additions: number;
   deletions: number;
   annotated: string;
-  lines: Set<number>;
+  lines: Map<number, string>;
 }
 
 export interface SkippedFile {

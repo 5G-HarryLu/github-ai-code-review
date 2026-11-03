@@ -6,7 +6,7 @@ import { gfmFromMarkdown } from 'mdast-util-gfm';
 import { gfm } from 'micromark-extension-gfm';
 import { sanitize, sanitizeInline } from '../src/markdown.ts';
 
-const ZWSP = '​';
+const ZWSP = '\u200b';
 
 /** Node types GitHub would see when rendering the output. */
 function types(markdown: string): Set<string> {

@@ -29,14 +29,23 @@ export const ReviewSchema = z.object({
     performance: Assessment,
     style: Assessment,
   } satisfies Record<Aspect, typeof Assessment>),
+  /** Entry-to-exit walkthroughs of the changed code paths. */
+  flows: z.array(
+    z.object({
+      entry: z.string(),
+      steps: z.array(z.object({ file: z.string(), line: z.number().int(), action: z.string(), risk: z.string() })),
+    }),
+  ),
   findings: z.array(
     z.object({
       aspect: z.enum(ASPECTS),
       file: z.string(),
       line: z.number().int(),
+      end_line: z.number().int(),
       severity: z.enum(SEVERITIES),
       title: z.string(),
-      detail: z.string(),
+      explanation: z.string(),
+      suggested_code: z.string(),
     }),
   ),
   verdict: z.object({ decision: z.enum(VERDICTS), comment: z.string() }),

@@ -105,7 +105,7 @@ test('keeps pre-existing problems out of the verdict and in their own folded sec
     finding({ priority: 'suggestion', title: 'nit' }),
   ]));
   assert.ok(!body.includes('old nit'), 'pre-existing suggestions are not reported');
-  assert.ok(body.includes('**✅ 沒有必須改善的項目 · 💡 建議改善 1 項 · 📦 既有問題 1 項**'));
+  assert.ok(body.includes('**✅ 沒有必須改善的項目 · 💡 建議改善 1 項（另有 📦 既有的必須改善 1 項，不是這次造成的，見下方）**'));
   const order = ['### 1. 💡 建議改善｜nit', '## 📦 既有問題', '<details><summary>1 項不是這次修改造成的', '### 2. ⛔ 必須改善｜old bug', '## 🧭 Call stack'];
   const positions = order.map(s => body.indexOf(s));
   assert.ok(positions.every(p => p >= 0), `missing: ${order.filter((_, i) => positions[i] < 0)}`);

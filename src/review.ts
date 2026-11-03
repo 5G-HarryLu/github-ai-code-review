@@ -7,10 +7,31 @@ import { z } from 'zod';
 export const SEVERITIES = ['critical', 'major', 'minor'] as const;
 export type Severity = (typeof SEVERITIES)[number];
 
+/** Review dimensions, in the order they appear in the comment. */
+export const ASPECTS = ['design', 'correctness', 'concurrency', 'security', 'performance', 'style'] as const;
+export type Aspect = (typeof ASPECTS)[number];
+
+export const RATINGS = ['good', 'fair', 'poor', 'na'] as const;
+export type Rating = (typeof RATINGS)[number];
+
+export const VERDICTS = ['approve', 'approve_with_suggestions', 'request_changes'] as const;
+export type Verdict = (typeof VERDICTS)[number];
+
+const Assessment = z.object({ rating: z.enum(RATINGS), comment: z.string() });
+
 export const ReviewSchema = z.object({
-  summary: z.string(),
+  overview: z.string(),
+  aspects: z.object({
+    design: Assessment,
+    correctness: Assessment,
+    concurrency: Assessment,
+    security: Assessment,
+    performance: Assessment,
+    style: Assessment,
+  } satisfies Record<Aspect, typeof Assessment>),
   findings: z.array(
     z.object({
+      aspect: z.enum(ASPECTS),
       file: z.string(),
       line: z.number().int(),
       severity: z.enum(SEVERITIES),
@@ -18,6 +39,7 @@ export const ReviewSchema = z.object({
       detail: z.string(),
     }),
   ),
+  verdict: z.object({ decision: z.enum(VERDICTS), comment: z.string() }),
 });
 
 export type ReviewOutput = z.infer<typeof ReviewSchema>;

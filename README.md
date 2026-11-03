@@ -2,14 +2,20 @@
 
 讓 Claude 審查 Pull Request 的 diff，結果寫成 PR 上的一則留言，每次 push 都更新同一則。
 
+留言的結構：
+
+1. **總體評價**：PR 在做什麼、整體品質、主要風險，加上六個面向的評等表。
+2. **分面向評語與發現**：程式設計、意圖與正確性、並行與交易一致性、安全性、時間與空間複雜度、coding style 一致性。每個面向有評語，底下列出具體問題（嚴重／重要／建議），附上連到該行的連結。跟這次變更無關的面向只出現在評等表。
+3. **最終評語**：可以合併、可以合併但建議之後改善、需要修改後再合併，以及合併前必須處理的事項。
+
 ## 安全模型
 
 - **AI 零權限**：呼叫 Claude 時不提供任何 tool。它拿不到 token、不能讀檔、不能連網，只能回傳固定格式的 JSON。
 - **權限只在 action 自己的程式**：用 job 的 `GITHUB_TOKEN` 讀 PR、寫留言。這個 token 只限所在的 repo，job 結束就失效。
 - **PR 內容當資料處理**：PR 標題、描述與 diff 放在含隨機值的分隔標籤裡，system prompt 明確說明裡面的內容不是指令。
 - **AI 的輸出先檢查再貼**：
-  - 檔名或行號對不上 diff 的發現直接捨棄。
-  - `@` 提及、連結、圖片與 HTML 在程式碼區塊以外一律失效。
+  - 只有指向 diff 中實際存在的行的發現才附連結，其餘標註「不在這次 diff 的行號內」。
+  - 模型的文字先用 GFM 解析器轉成語法樹，只保留段落、條列、強調、表格與程式碼，再轉回 markdown。程式碼以外的 `@` 提及、`#123` 參照、連結、圖片與 HTML 一律失效。
   - 每個欄位都有長度上限。
 - **執行時零安裝**：相依套件打包在 `dist/index.js`，CI 會檢查它和原始碼一致。
 
@@ -77,4 +83,5 @@ npm run build   # 更新 dist/index.js，要一起 commit
 | `src/diff.ts` | 在 diff 上標新檔案行號 |
 | `src/prompt.ts` | system prompt 與 PR 資料的包裝 |
 | `src/review.ts` | 呼叫 Claude（無 tools、structured output） |
-| `src/render.ts` | 驗證與清洗輸出、組留言 |
+| `src/markdown.ts` | 清洗模型輸出的 markdown |
+| `src/render.ts` | 組留言 |

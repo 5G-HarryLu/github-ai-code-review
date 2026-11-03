@@ -12,6 +12,10 @@ export type Priority = (typeof PRIORITIES)[number];
 export const ASPECTS = ['design', 'correctness', 'concurrency', 'security', 'performance', 'style'] as const;
 export type Aspect = (typeof ASPECTS)[number];
 
+/** introduced: caused or made worse by this PR. pre_existing: already in the base, untouched by this PR. */
+export const ORIGINS = ['introduced', 'pre_existing'] as const;
+export type Origin = (typeof ORIGINS)[number];
+
 export const ReviewSchema = z.object({
   overview: z.string(),
   /** Notes on the changed functions whose callers or callees matter. */
@@ -19,6 +23,7 @@ export const ReviewSchema = z.object({
   findings: z.array(
     z.object({
       priority: z.enum(PRIORITIES),
+      origin: z.enum(ORIGINS),
       aspect: z.enum(ASPECTS),
       file: z.string(),
       line: z.number().int(),
@@ -28,6 +33,8 @@ export const ReviewSchema = z.object({
       suggested_code: z.string(),
     }),
   ),
+  /** Behaviors the model considered and left unjudged, so nothing is set aside silently. */
+  not_judged: z.array(z.object({ behavior: z.string(), reason: z.string() })),
 });
 
 export type ReviewOutput = z.infer<typeof ReviewSchema>;

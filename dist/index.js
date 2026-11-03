@@ -53014,7 +53014,9 @@ function systemPrompt(nonce) {
    - \u88AB\u547C\u53EB\u7AEF\uFF1A\u4FEE\u6539\u7684\u7A0B\u5F0F\u78BC\u5C0D\u5B83\u7684\u7528\u6CD5\u5C0D\u55CE\uFF08\u53C3\u6578\u3001\u56DE\u50B3\u503C\u3001\u932F\u8AA4\u3001\u662F\u5426\u9700\u8981 lock \u6216\u4EA4\u6613\uFF09\uFF1F
    - \u547C\u53EB\u95DC\u4FC2\u662F\u4F9D\u540D\u7A31\u641C\u5C0B\u7684\uFF0C\u540C\u540D\u51FD\u5F0F\u53EF\u80FD\u88AB\u8AA4\u8A8D\uFF1B\u770B\u8D77\u4F86\u4E0D\u76F8\u5E72\u7684\u5C31\u5FFD\u7565\u3002
 2. **\u9010\u9762\u5411\u6AA2\u67E5**\uFF1A\u7528\u4E0B\u9762\u516D\u500B\u9762\u5411\u6AA2\u67E5\u8B8A\u66F4\u3002
-3. \u53EA\u56DE\u5831\u6709\u7A0B\u5F0F\u78BC\u8B49\u64DA\u3001\u800C\u4E14\u80FD\u5177\u9AD4\u793A\u7BC4\u6539\u6CD5\u7684\u554F\u984C\u3002
+3. **\u5206\u8FA8\u4F86\u6E90**\uFF1A\u6BCF\u500B\u554F\u984C\u5224\u65B7\u662F\u9019\u6B21\u4FEE\u6539\u9020\u6210\u7684\uFF0C\u9084\u662F base \u672C\u4F86\u5C31\u6709\u7684\uFF08\u898B origin \u6B04\u4F4D\uFF09\u3002
+4. \u53EA\u56DE\u5831\u6709\u7A0B\u5F0F\u78BC\u8B49\u64DA\u3001\u800C\u4E14\u80FD\u5177\u9AD4\u793A\u7BC4\u6539\u6CD5\u7684\u554F\u984C\u3002
+5. **\u4EA4\u4EE3\u6C92\u6709\u5224\u65B7\u7684\u90E8\u5206**\uFF1A\u8003\u616E\u904E\u4F46\u6C92\u6709\u4E0B\u5224\u65B7\u7684\u884C\u70BA\uFF0C\u5BEB\u9032 not_judged\uFF0C\u4E0D\u8981\u9ED8\u9ED8\u7565\u904E\u3002
 
 # \u5BE9\u67E5\u9762\u5411\uFF08aspect\uFF09
 1. **design**\uFF1A\u8077\u8CAC\u662F\u5426\u6E05\u695A\u3001\u62BD\u8C61\u662F\u5426\u6070\u7576\u3001\u4ECB\u9762\u662F\u5426\u5BB9\u6613\u8AA4\u7528\u3001\u662F\u5426\u91CD\u8907\u65E2\u6709\u529F\u80FD\u3002
@@ -53024,7 +53026,7 @@ function systemPrompt(nonce) {
 5. **performance**\uFF1A\u6F14\u7B97\u6CD5\u8907\u96DC\u5EA6\uFF08\u5BEB\u51FA O(n\xB2) \u2192 O(n) \u9019\u985E\u91CF\u7D1A\uFF09\u3001\u71B1\u8DEF\u5F91\u4E0A\u7684 N+1 \u67E5\u8A62\u6216\u591A\u9918\u7684\u914D\u7F6E\u3001\u7121\u4E0A\u9650\u7684\u96C6\u5408\u3001\u8CC7\u6E90\u6D29\u6F0F\u3002
 6. **style**\uFF1A\u662F\u5426\u8DDF\u5468\u570D\u7A0B\u5F0F\u78BC\u7684\u6163\u4F8B\u4E00\u81F4\u3002\u53EA\u6BD4\u5C0D\u770B\u5F97\u5230\u7684\u6163\u4F8B\uFF0C\u4E0D\u63D0\u500B\u4EBA\u504F\u597D\u3002
 
-\u4E0D\u8981\u63D0\uFF1A\u300C\u6539\u7528\u67D0\u67D0\u6846\u67B6\u6216\u5DE5\u5177\u300D\u3001\u8207\u9019\u6B21\u8B8A\u66F4\u7121\u95DC\u7684\u65E2\u6709\u554F\u984C\u3001\u7A31\u8B9A\u3002
+\u4E0D\u8981\u63D0\uFF1A\u300C\u6539\u7528\u67D0\u67D0\u6846\u67B6\u6216\u5DE5\u5177\u300D\u3001\u4E0D\u5728 diff \u6216\u300C\u547C\u53EB\u95DC\u4FC2\u300D\u7247\u6BB5\u88E1\u7684\u65E2\u6709\u554F\u984C\u3001\u7A31\u8B9A\u3002
 
 # \u5BEB\u6CD5
 \u8B80\u8005\u53EF\u80FD\u6C92\u770B\u904E\u9019\u500B repo\u3002\u7528\u7E41\u9AD4\u4E2D\u6587\uFF08\u53F0\u7063\u7528\u8A9E\uFF09\uFF0C\u77ED\u53E5\uFF0C\u4E00\u53E5\u53EA\u8AAA\u4E00\u4EF6\u4E8B\u3002\u5148\u8B1B\u300C\u4EC0\u9EBC\u60C5\u6CC1\u6703\u51FA\u4EC0\u9EBC\u932F\u300D\uFF0C\u518D\u8B1B\u600E\u9EBC\u6539\uFF1B\u80FD\u8AAA\u300C\u5169\u7B46\u4E0B\u6CE8\u540C\u6642\u9032\u4F86\u300D\u5C31\u4E0D\u8981\u53EA\u5BEB race condition\u3002\u4E0D\u8981\u5BEB\u7E3D\u8A55\u4EE5\u5916\u7684\u7E3D\u7D50\u3001\u7D50\u8A9E\u6216\u7A31\u8B9A\uFF0C\u4E0D\u8981\u5728\u591A\u5247\u91CD\u8907\u540C\u4E00\u500B\u539F\u56E0\u3002\u6587\u5B57\u6B04\u4F4D\u53EA\u7528\u77ED\u6BB5\u843D\u8207\u884C\u5167\u7A0B\u5F0F\u78BC\uFF0C\u4E0D\u8981\u7528\u689D\u5217\u3001\u6A19\u984C\u3001\u9023\u7D50\u3001\u5716\u7247\u6216 HTML\u3002
@@ -53036,11 +53038,15 @@ function systemPrompt(nonce) {
   - review\uFF1A\u6700\u591A 3 \u53E5\uFF0C\u8AAA\u9019\u500B\u6539\u52D5\u5C0D\u547C\u53EB\u7AEF\u6216\u88AB\u547C\u53EB\u7AEF\u6709\u4EC0\u9EBC\u5F71\u97FF\u3001\u54EA\u88E1\u53EF\u80FD\u51FA\u932F\u3002
 - **findings**\uFF1A\u4E00\u500B\u539F\u56E0\u4E00\u5247\u3002
   - priority\uFF1Amust_fix\uFF08\u5408\u4F75\u524D\u5FC5\u9808\u4FEE\uFF1A\u6703\u9020\u6210\u932F\u8AA4\u7D50\u679C\u3001\u91D1\u9322\u6216\u8CC7\u6599\u932F\u8AA4\u3001\u5B89\u5168\u554F\u984C\u3001\u670D\u52D9\u4E2D\u65B7\u3001\u4E26\u884C\u554F\u984C\uFF09\u6216 suggestion\uFF08\u4E0D\u5F71\u97FF\u6B63\u78BA\u6027\u7684\u6539\u5584\uFF1A\u53EF\u8B80\u6027\u3001\u7DAD\u8B77\u6027\u3001\u6548\u80FD\u5C0F\u6539\u9032\u3001\u98A8\u683C\u4E00\u81F4\u6027\uFF09\u3002
+  - origin\uFF1Aintroduced\uFF08\u9019\u6B21\u4FEE\u6539\u9020\u6210\u7684\uFF0C\u5305\u542B\u4FEE\u6539\u8B93\u65E2\u6709\u554F\u984C\u66F4\u5BB9\u6613\u767C\u751F\u6216\u5F71\u97FF\u66F4\u5927\uFF09\u6216 pre_existing\uFF08base \u672C\u4F86\u5C31\u6709\uFF0C\u9019\u6B21\u6C92\u6709\u6539\u5230\u3001\u4E5F\u6C92\u6709\u8B93\u5B83\u66F4\u56B4\u91CD\uFF09\u3002\u65E2\u6709\u554F\u984C\u53EA\u56DE\u5831\u6703\u9020\u6210\u932F\u8AA4\u7D50\u679C\u7684\uFF08must_fix \u7B49\u7D1A\uFF09\uFF0C\u4E0D\u56DE\u5831\u65E2\u6709\u7684\u98A8\u683C\u6216\u5C0F\u6539\u9032\u3002
   - aspect\uFF1A\u4E0A\u9762\u516D\u500B\u9762\u5411\u4E4B\u4E00\u3002
   - file\u3001line\u3001end_line\uFF1A\u6709\u554F\u984C\u7684\u7A0B\u5F0F\u78BC\u7BC4\u570D\uFF0C\u6700\u591A 12 \u884C\uFF0C\u55AE\u884C\u6642\u5169\u8005\u76F8\u540C\u3002\u5FC5\u9808\u662F diff \u88E1\u6709\u6A19\u884C\u865F\u7684\u884C\uFF0C\u6216\u300C\u547C\u53EB\u95DC\u4FC2\u300D\u7A0B\u5F0F\u7247\u6BB5\u88E1\u6709\u6A19\u884C\u865F\u7684\u884C\uFF08\u554F\u984C\u5728\u547C\u53EB\u7AEF\u6216\u88AB\u547C\u53EB\u7AEF\u6642\u7528\u9019\u500B\uFF09\u3002\u554F\u984C\u5728\u88AB\u522A\u9664\u7684\u7A0B\u5F0F\u78BC\u6642\uFF0C\u6307\u5411\u9644\u8FD1\u6709\u884C\u865F\u7684\u884C\u3002\u7CFB\u7D71\u6703\u81EA\u52D5\u8CBC\u51FA\u9019\u6BB5\u7A0B\u5F0F\u78BC\u3002
   - title\uFF1A20 \u500B\u5B57\u4EE5\u5167\uFF0C\u53EA\u8B1B\u554F\u984C\uFF0C\u4E0D\u52A0\u5206\u985E\u6216\u4F4D\u7F6E\u3002
   - explanation\uFF1A\u6700\u591A 3 \u53E5\uFF1A\u4EC0\u9EBC\u60C5\u6CC1\u4E0B\u6703\u51FA\u4EC0\u9EBC\u4E8B\u3001\u70BA\u4EC0\u9EBC\u3001\u600E\u9EBC\u6539\u3002
-  - suggested_code\uFF1A\u6539\u597D\u4E4B\u5F8C\u7684\u7A0B\u5F0F\u78BC\uFF0C\u4E00\u5B9A\u8981\u6709\u3002\u53EA\u653E\u539F\u59CB\u78BC\uFF08\u4E0D\u8981 \`\`\` \u570D\u6B04\u3001\u4E0D\u8981 diff \u683C\u5F0F\uFF09\uFF0C\u8DDF\u539F\u6A94\u540C\u4E00\u7A2E\u8A9E\u8A00\uFF0C\u53EA\u5305\u542B\u8981\u6539\u7684\u90A3\u5E7E\u884C\u8207\u5FC5\u8981\u4E0A\u4E0B\u6587\uFF0C\u6700\u591A 20 \u884C\u3002\u4E0D\u53EF\u4EE5\u7701\u7565\u95DC\u9375\u7684 lock\u3001\u4EA4\u6613\u6216\u932F\u8AA4\u8655\u7406\uFF0C\u4E5F\u4E0D\u8981\u7DE8\u9020\u770B\u4E0D\u5230\u7684 API\u3002`;
+  - suggested_code\uFF1A\u6539\u597D\u4E4B\u5F8C\u7684\u7A0B\u5F0F\u78BC\uFF0C\u4E00\u5B9A\u8981\u6709\u3002\u53EA\u653E\u539F\u59CB\u78BC\uFF08\u4E0D\u8981 \`\`\` \u570D\u6B04\u3001\u4E0D\u8981 diff \u683C\u5F0F\uFF09\uFF0C\u8DDF\u539F\u6A94\u540C\u4E00\u7A2E\u8A9E\u8A00\uFF0C\u53EA\u5305\u542B\u8981\u6539\u7684\u90A3\u5E7E\u884C\u8207\u5FC5\u8981\u4E0A\u4E0B\u6587\uFF0C\u6700\u591A 20 \u884C\u3002\u4E0D\u53EF\u4EE5\u7701\u7565\u95DC\u9375\u7684 lock\u3001\u4EA4\u6613\u6216\u932F\u8AA4\u8655\u7406\uFF0C\u4E5F\u4E0D\u8981\u7DE8\u9020\u770B\u4E0D\u5230\u7684 API\u3002
+- **not_judged**\uFF1A\u8003\u616E\u904E\u4F46\u6C92\u6709\u4E0B\u5224\u65B7\u7684\u884C\u70BA\uFF0C\u6700\u591A 5 \u5247\uFF1B\u6C92\u6709\u5C31\u7D66\u7A7A\u9663\u5217\u3002\u4F8B\u5982\u8D85\u51FA\u9019\u500B PR \u7684\u76EE\u7684\uFF0C\u6216\u9700\u8981\u770B\u4E0D\u5230\u7684\u8CC7\u8A0A\u624D\u80FD\u5224\u65B7\uFF08\u8A2D\u5B9A\u6A94\u3001\u8CC7\u6599\u5EAB schema\u3001\u6C92\u6709\u9001\u5BE9\u7684\u6A94\u6848\u3001\u57F7\u884C\u74B0\u5883\u3001\u547C\u53EB\u95DC\u4FC2\u6C92\u627E\u5230\u7684\u547C\u53EB\u7AEF\uFF09\u3002
+  - behavior\uFF1A\u4E00\u53E5\u8A71\u8AAA\u662F\u54EA\u500B\u884C\u70BA\u3002
+  - reason\uFF1A\u4E00\u53E5\u8A71\u8AAA\u70BA\u4EC0\u9EBC\u6C92\u6709\u5224\u65B7\u3002`;
 }
 function numbered(snippet2) {
   return snippet2.lines.map((text5, i) => text5 === null ? `${" ".repeat(6)}  \u2026` : `${String(snippet2.start + i).padStart(6)}  ${text5}`).join("\n");
@@ -84212,6 +84218,7 @@ function betaZodOutputFormat(zodObject) {
 // src/review.ts
 var PRIORITIES = ["must_fix", "suggestion"];
 var ASPECTS = ["design", "correctness", "concurrency", "security", "performance", "style"];
+var ORIGINS = ["introduced", "pre_existing"];
 var ReviewSchema = external_exports.object({
   overview: external_exports.string(),
   /** Notes on the changed functions whose callers or callees matter. */
@@ -84219,6 +84226,7 @@ var ReviewSchema = external_exports.object({
   findings: external_exports.array(
     external_exports.object({
       priority: external_exports.enum(PRIORITIES),
+      origin: external_exports.enum(ORIGINS),
       aspect: external_exports.enum(ASPECTS),
       file: external_exports.string(),
       line: external_exports.number().int(),
@@ -84227,7 +84235,9 @@ var ReviewSchema = external_exports.object({
       explanation: external_exports.string(),
       suggested_code: external_exports.string()
     })
-  )
+  ),
+  /** Behaviors the model considered and left unjudged, so nothing is set aside silently. */
+  not_judged: external_exports.array(external_exports.object({ behavior: external_exports.string(), reason: external_exports.string() }))
 });
 async function runReview(apiKey, model, system, user) {
   const client = new Anthropic({ apiKey });
@@ -84267,6 +84277,8 @@ var MAX_OVERVIEW = 400;
 var MAX_TITLE = 80;
 var MAX_TEXT = 500;
 var MAX_SUGGESTED_CODE = 2e3;
+var MAX_NOT_JUDGED = 5;
+var MAX_NOT_JUDGED_TEXT = 200;
 var ASPECT_LABEL = {
   design: "\u{1F3D7}\uFE0F \u7A0B\u5F0F\u8A2D\u8A08",
   correctness: "\u{1F3AF} \u610F\u5716\u8207\u6B63\u78BA\u6027",
@@ -84313,12 +84325,15 @@ function quote(lines, start, end) {
   return out.map((l) => l === "\u2026" ? l : l.slice(indent2)).join("\n");
 }
 function headline(findings) {
-  const count = (p) => findings.filter((f) => f.priority === p).length;
+  const introduced = findings.filter((f) => f.origin === "introduced");
+  const count = (p) => introduced.filter((f) => f.priority === p).length;
   const must = count("must_fix");
   const suggest = count("suggestion");
-  if (must > 0) return `**${PRIORITY_LABEL.must_fix} ${must} \u9805 \xB7 ${PRIORITY_LABEL.suggestion} ${suggest} \u9805**`;
-  if (suggest > 0) return `**\u2705 \u6C92\u6709\u5FC5\u9808\u6539\u5584\u7684\u9805\u76EE \xB7 ${PRIORITY_LABEL.suggestion} ${suggest} \u9805**`;
-  return "**\u2705 \u9019\u6B21\u7684\u8B8A\u66F4\u6C92\u6709\u767C\u73FE\u9700\u8981\u6539\u5584\u7684\u5730\u65B9**";
+  const preExisting = findings.length - introduced.length;
+  const extra = preExisting > 0 ? ` \xB7 \u{1F4E6} \u65E2\u6709\u554F\u984C ${preExisting} \u9805` : "";
+  if (must > 0) return `**${PRIORITY_LABEL.must_fix} ${must} \u9805 \xB7 ${PRIORITY_LABEL.suggestion} ${suggest} \u9805${extra}**`;
+  if (suggest > 0) return `**\u2705 \u6C92\u6709\u5FC5\u9808\u6539\u5584\u7684\u9805\u76EE \xB7 ${PRIORITY_LABEL.suggestion} ${suggest} \u9805${extra}**`;
+  return `**\u2705 \u9019\u6B21\u7684\u8B8A\u66F4\u6C92\u6709\u767C\u73FE\u9700\u8981\u6539\u5584\u7684\u5730\u65B9${extra}**`;
 }
 function renderFinding(repo, sha, sources, f, index2) {
   const end = Math.min(Math.max(f.end_line, f.line), f.line + MAX_QUOTED_LINES - 1);
@@ -84370,16 +84385,23 @@ function renderCallStacks(repo, sha, sources, graph, notes) {
   }
   return parts;
 }
-function scope(selection, graph) {
+function notJudgedList(items) {
+  const lines = items.slice(0, MAX_NOT_JUDGED).map((n) => `- ${sanitizeInline(n.behavior, MAX_NOT_JUDGED_TEXT)}\uFF1A${sanitizeInline(n.reason, MAX_NOT_JUDGED_TEXT)}`);
+  return `**\u6C92\u6709\u5224\u65B7\u7684\u90E8\u5206**\uFF08AI \u8003\u616E\u904E\uFF0C\u4F46\u6C92\u6709\u4E0B\u7D50\u8AD6\uFF09
+
+${lines.join("\n")}`;
+}
+function scope(selection, graph, notJudged) {
   const skipped = selection.skipped.length + selection.unlisted;
   const reasons = /* @__PURE__ */ new Map();
   for (const s of selection.skipped) reasons.set(s.reason, (reasons.get(s.reason) ?? 0) + 1);
   if (selection.unlisted > 0) reasons.set("GitHub API \u6C92\u6709\u5217\u51FA", selection.unlisted);
   const summary2 = [...reasons].map(([reason, n]) => `${reason} ${n}`).join("\u3001");
   const line = `\u5BE9\u67E5\u7BC4\u570D\uFF1A\u9001\u5BE9 ${selection.files.length} \u500B\u6A94\u6848\u3001\u8FFD\u8E64 ${graph.length} \u500B\u88AB\u4FEE\u6539\u7684\u51FD\u5F0F${skipped > 0 ? `\uFF1B\u672A\u9001\u5BE9 ${skipped} \u500B\uFF08${summary2}\uFF09` : ""}\u3002\u53EA\u4F9D\u7A0B\u5F0F\u78BC\u5224\u8B80\uFF0C\u6C92\u6709\u57F7\u884C\u7A0B\u5F0F\u6216\u6E2C\u8A66\u3002`;
-  return skipped > 0 ? `${line}
-
-${skippedList(selection.skipped)}` : line;
+  const parts = [line];
+  if (notJudged.length > 0) parts.push(notJudgedList(notJudged));
+  if (skipped > 0) parts.push(skippedList(selection.skipped));
+  return parts.join("\n\n");
 }
 function skippedList(skipped) {
   const items = skipped.slice(0, MAX_SKIPPED_LISTED).map((s) => `- ${code4(s.filename)}\uFF1A${s.reason}`);
@@ -84391,7 +84413,7 @@ ${items.join("\n")}
 </details>`;
 }
 function render2(repo, pr, selection, graph, review) {
-  const rank = (f) => PRIORITIES.indexOf(f.priority);
+  const rank = (f) => ORIGINS.indexOf(f.origin) * PRIORITIES.length + PRIORITIES.indexOf(f.priority);
   const sorted = [...review.output.findings].sort((a, b) => rank(a) - rank(b));
   for (let shown = sorted.length; ; shown--) {
     const body = compose(repo, pr, selection, graph, review, sorted.slice(0, shown));
@@ -84399,19 +84421,32 @@ function render2(repo, pr, selection, graph, review) {
   }
 }
 function compose(repo, pr, selection, graph, review, shown) {
-  const { overview, call_stacks, findings } = review.output;
+  const { overview, call_stacks, findings, not_judged } = review.output;
   const sources = collectSources(selection, graph);
   const sha = pr.headSha;
   const parts = [COMMENT_MARKER, "## \u{1F916} AI Code Review", headline(findings), sanitize(overview, MAX_OVERVIEW)];
-  shown.forEach((f, i) => parts.push(renderFinding(repo, sha, sources, f, i + 1)));
-  if (findings.length > shown.length) parts.push(`\u53E6\u6709 ${findings.length - shown.length} \u5247\u5EFA\u8B70\u56E0\u70BA\u7559\u8A00\u9577\u5EA6\u4E0A\u9650\u6C92\u6709\u5217\u51FA\u3002`);
+  const introduced = shown.filter((f) => f.origin === "introduced");
+  const preExisting = shown.filter((f) => f.origin === "pre_existing");
+  introduced.forEach((f, i) => parts.push(renderFinding(repo, sha, sources, f, i + 1)));
+  if (preExisting.length > 0) {
+    const items = preExisting.map((f, i) => renderFinding(repo, sha, sources, f, introduced.length + i + 1));
+    parts.push(
+      "## \u{1F4E6} \u65E2\u6709\u554F\u984C",
+      `<details><summary>${preExisting.length} \u9805\u4E0D\u662F\u9019\u6B21\u4FEE\u6539\u9020\u6210\u7684\uFF0C\u4E0D\u5217\u5165\u4E0A\u9762\u7684\u7D50\u8AD6\uFF0C\u5EFA\u8B70\u53E6\u958B PR \u8655\u7406</summary>
+
+${items.join("\n\n")}
+
+</details>`
+    );
+  }
+  if (findings.length > shown.length) parts.push(`\u53E6\u6709 ${findings.length - shown.length} \u5247\u767C\u73FE\u56E0\u70BA\u7559\u8A00\u9577\u5EA6\u4E0A\u9650\u6C92\u6709\u5217\u51FA\u3002`);
   parts.push(...renderCallStacks(repo, sha, sources, graph, call_stacks));
-  parts.push("---", scope(selection, graph));
+  parts.push("---", scope(selection, graph, not_judged));
   parts.push(`<sub>commit ${code4(sha.slice(0, 7))} \xB7 \u6A21\u578B ${code4(review.model)} \xB7 AI review \u53EA\u4F9B\u53C3\u8003\uFF0C\u4E0D\u80FD\u53D6\u4EE3\u4EBA\u5DE5 review</sub>`);
   return parts.join("\n\n");
 }
 function renderNothingToReview(pr, selection) {
-  const parts = [COMMENT_MARKER, "## \u{1F916} AI Code Review", "\u9019\u6B21\u7684\u8B8A\u66F4\u6C92\u6709\u53EF\u4EE5\u9001\u5BE9\u7684\u7A0B\u5F0F\u78BC\u3002", "---", scope(selection, [])];
+  const parts = [COMMENT_MARKER, "## \u{1F916} AI Code Review", "\u9019\u6B21\u7684\u8B8A\u66F4\u6C92\u6709\u53EF\u4EE5\u9001\u5BE9\u7684\u7A0B\u5F0F\u78BC\u3002", "---", scope(selection, [], [])];
   parts.push(`<sub>commit ${code4(pr.headSha.slice(0, 7))}</sub>`);
   return parts.join("\n\n");
 }

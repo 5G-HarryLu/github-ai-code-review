@@ -30,6 +30,7 @@ const graph: ChangedFunction[] = [
 type Finding = ReviewOutput['findings'][number];
 const finding = (f: Partial<Finding>): Finding => ({
   priority: 'must_fix',
+  origin: 'introduced',
   aspect: 'concurrency',
   file: 'src/a.go',
   line: 2,
@@ -40,7 +41,7 @@ const finding = (f: Partial<Finding>): Finding => ({
   ...f,
 });
 
-const review = (findings: Finding[]): ReviewResult => ({
+const review = (findings: Finding[], not_judged: ReviewOutput['not_judged'] = []): ReviewResult => ({
   model: 'claude-opus-5-5',
   inputTokens: 1000,
   outputTokens: 200,
@@ -48,6 +49,7 @@ const review = (findings: Finding[]): ReviewResult => ({
     overview: '加了扣款，但沒有鎖。',
     call_stacks: [{ function: 'Pay', file: 'src/a.go', line: 1, review: '`Handle` 沒有處理扣款失敗。' }],
     findings,
+    not_judged,
   },
 });
 
@@ -93,5 +95,23 @@ test('drops suggestions first when the comment would exceed GitHub\'s limit', ()
   const body = render(repo, pr, selection, graph, review([...Array.from({ length: 40 }, (_, i) => long(i + 1, 'suggestion')), long(0, 'must_fix')]));
   assert.ok(body.length <= 65_000);
   assert.ok(body.includes('finding 0'));
-  assert.match(body, /另有 \d+ 則建議因為留言長度上限沒有列出/);
+  assert.match(body, /另有 \d+ 則發現因為留言長度上限沒有列出/);
+});
+
+test('keeps pre-existing problems out of the verdict and in their own folded section', () => {
+  const body = render(repo, pr, selection, graph, review([finding({ origin: 'pre_existing', title: 'old bug' }), finding({ priority: 'suggestion', title: 'nit' })]));
+  assert.ok(body.includes('**✅ 沒有必須改善的項目 · 💡 建議改善 1 項 · 📦 既有問題 1 項**'));
+  const order = ['### 1. 💡 建議改善｜nit', '## 📦 既有問題', '<details><summary>1 項不是這次修改造成的', '### 2. ⛔ 必須改善｜old bug', '## 🧭 Call stack'];
+  const positions = order.map(s => body.indexOf(s));
+  assert.ok(positions.every(p => p >= 0), `missing: ${order.filter((_, i) => positions[i] < 0)}`);
+  assert.deepEqual(positions, [...positions].sort((a, b) => a - b));
+});
+
+test('lists what the model left unjudged in the scope section', () => {
+  const body = render(repo, pr, selection, graph, review([], [{ behavior: '扣款失敗後的重試', reason: '重試設定在沒有送審的 config 裡' }]));
+  const scopeAt = body.indexOf('審查範圍');
+  const listAt = body.indexOf('**沒有判斷的部分**');
+  assert.ok(scopeAt >= 0 && listAt > scopeAt);
+  assert.ok(body.includes('- 扣款失敗後的重試：重試設定在沒有送審的 config 裡'));
+  assert.ok(!render(repo, pr, selection, graph, review([])).includes('沒有判斷的部分'));
 });

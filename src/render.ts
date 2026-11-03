@@ -174,7 +174,7 @@ function skippedList(skipped: SkippedFile[]): string {
 export function render(repo: Repo, pr: PullRequest, selection: Selection, graph: ChangedFunction[], review: ReviewResult): string {
   // Pre-existing problems are reported only when they cause wrong results; enforce it here, not only in the prompt.
   const findings = review.output.findings.filter(f => f.origin === 'introduced' || f.priority === 'must_fix');
-  review = { ...review, output: { ...review.output, findings } };
+  const reported: ReviewResult = { ...review, output: { ...review.output, findings } };
 
   // This PR's problems before pre-existing ones, must-fix before suggestions within each.
   const rank = (f: Finding) => ORIGINS.indexOf(f.origin) * PRIORITIES.length + PRIORITIES.indexOf(f.priority);
@@ -182,7 +182,7 @@ export function render(repo: Repo, pr: PullRequest, selection: Selection, graph:
 
   // Drop findings from the end (pre-existing, then suggestions) until the comment fits.
   for (let shown = sorted.length; ; shown--) {
-    const body = compose(repo, pr, selection, graph, review, sorted.slice(0, shown));
+    const body = compose(repo, pr, selection, graph, reported, sorted.slice(0, shown));
     if (body.length <= MAX_BODY || shown === 0) return body;
   }
 }

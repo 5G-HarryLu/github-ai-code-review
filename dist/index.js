@@ -84416,11 +84416,11 @@ ${items.join("\n")}
 }
 function render2(repo, pr, selection, graph, review) {
   const findings = review.output.findings.filter((f) => f.origin === "introduced" || f.priority === "must_fix");
-  review = { ...review, output: { ...review.output, findings } };
+  const reported = { ...review, output: { ...review.output, findings } };
   const rank = (f) => ORIGINS.indexOf(f.origin) * PRIORITIES.length + PRIORITIES.indexOf(f.priority);
   const sorted = [...findings].sort((a, b) => rank(a) - rank(b));
   for (let shown = sorted.length; ; shown--) {
-    const body = compose(repo, pr, selection, graph, review, sorted.slice(0, shown));
+    const body = compose(repo, pr, selection, graph, reported, sorted.slice(0, shown));
     if (body.length <= MAX_BODY || shown === 0) return body;
   }
 }

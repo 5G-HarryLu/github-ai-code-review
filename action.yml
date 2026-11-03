@@ -1,68 +1,27 @@
-name: 'AI Code Review with Claude'
-description: 'Automated code review using Claude AI with aggressive and direct feedback style'
+name: 'AI Code Review'
+description: 'Claude reviews the pull request diff with no tools and no credentials; the action validates its findings and keeps one PR comment up to date.'
 author: '5G-HarryLu'
 
 inputs:
   claude-api-key:
-    description: 'Claude API Key (get from https://console.anthropic.com/)'
+    description: 'Anthropic API key.'
     required: true
-  claude-model:
-    description: 'Claude model to use (claude-opus-4-6, claude-sonnet-4-5-20250929, claude-sonnet-4-20250514, claude-3-7-sonnet-20250219, claude-3-5-haiku-20241022)'
+  model:
+    description: 'Claude model id.'
     required: false
-    default: 'claude-opus-4-6'
+    default: 'claude-opus-5-5'
   github-token:
-    description: 'GitHub Token for API access'
+    description: 'Token used to read the PR and write the comment. The job needs contents: read and pull-requests: write.'
     required: false
     default: ${{ github.token }}
-  repository:
-    description: 'Repository in format owner/repo'
-    required: false
-    default: ${{ github.repository }}
-  pr-number:
-    description: 'Pull Request number to review'
-    required: false
-    default: ${{ github.event.pull_request.number }}
 
 outputs:
-  review-posted:
-    description: 'Whether the review was successfully posted'
-    value: ${{ steps.review.outputs.success }}
   comment-url:
-    description: 'URL of the posted review comment'
-    value: ${{ steps.review.outputs.comment_url }}
+    description: 'URL of the review comment.'
 
 runs:
-  using: 'composite'
-  steps:
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-
-    - name: Install dependencies
-      shell: bash
-      run: |
-        cd ${{ github.action_path }}
-        npm install
-
-    - name: Build TypeScript
-      shell: bash
-      run: |
-        cd ${{ github.action_path }}
-        npm run build
-
-    - name: Run AI Code Review
-      id: review
-      shell: bash
-      env:
-        CLAUDE_API_KEY: ${{ inputs.claude-api-key }}
-        CLAUDE_MODEL: ${{ inputs.claude-model }}
-        GITHUB_ACCESS_TOKEN: ${{ inputs.github-token }}
-        GITHUB_REPOSITORY: ${{ inputs.repository }}
-        PR_NUMBER: ${{ inputs.pr-number }}
-      run: |
-        cd ${{ github.action_path }}
-        node ai-code-reviewer.js
+  using: 'node24'
+  main: 'dist/index.js'
 
 branding:
   icon: 'check-circle'

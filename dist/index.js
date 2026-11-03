@@ -84386,7 +84386,9 @@ function renderCallStacks(repo, sha, sources, graph, notes) {
   return parts;
 }
 function notJudgedList(items) {
-  const lines = items.slice(0, MAX_NOT_JUDGED).map((n) => `- ${sanitizeInline(n.behavior, MAX_NOT_JUDGED_TEXT)}\uFF1A${sanitizeInline(n.reason, MAX_NOT_JUDGED_TEXT)}`);
+  const behavior = (text5) => sanitizeInline(text5, MAX_NOT_JUDGED_TEXT).replace(/[。.．]+$/, "");
+  const lines = items.slice(0, MAX_NOT_JUDGED).map((n) => `- ${behavior(n.behavior)}\uFF1A${sanitizeInline(n.reason, MAX_NOT_JUDGED_TEXT)}`);
+  if (items.length > MAX_NOT_JUDGED) lines.push(`- \u53E6\u6709 ${items.length - MAX_NOT_JUDGED} \u5247\u6C92\u6709\u5217\u51FA`);
   return `**\u6C92\u6709\u5224\u65B7\u7684\u90E8\u5206**\uFF08AI \u8003\u616E\u904E\uFF0C\u4F46\u6C92\u6709\u4E0B\u7D50\u8AD6\uFF09
 
 ${lines.join("\n")}`;
@@ -84413,8 +84415,10 @@ ${items.join("\n")}
 </details>`;
 }
 function render2(repo, pr, selection, graph, review) {
+  const findings = review.output.findings.filter((f) => f.origin === "introduced" || f.priority === "must_fix");
+  review = { ...review, output: { ...review.output, findings } };
   const rank = (f) => ORIGINS.indexOf(f.origin) * PRIORITIES.length + PRIORITIES.indexOf(f.priority);
-  const sorted = [...review.output.findings].sort((a, b) => rank(a) - rank(b));
+  const sorted = [...findings].sort((a, b) => rank(a) - rank(b));
   for (let shown = sorted.length; ; shown--) {
     const body = compose(repo, pr, selection, graph, review, sorted.slice(0, shown));
     if (body.length <= MAX_BODY || shown === 0) return body;

@@ -99,7 +99,12 @@ test('drops suggestions first when the comment would exceed GitHub\'s limit', ()
 });
 
 test('keeps pre-existing problems out of the verdict and in their own folded section', () => {
-  const body = render(repo, pr, selection, graph, review([finding({ origin: 'pre_existing', title: 'old bug' }), finding({ priority: 'suggestion', title: 'nit' })]));
+  const body = render(repo, pr, selection, graph, review([
+    finding({ origin: 'pre_existing', title: 'old bug' }),
+    finding({ origin: 'pre_existing', priority: 'suggestion', title: 'old nit' }),
+    finding({ priority: 'suggestion', title: 'nit' }),
+  ]));
+  assert.ok(!body.includes('old nit'), 'pre-existing suggestions are not reported');
   assert.ok(body.includes('**✅ 沒有必須改善的項目 · 💡 建議改善 1 項 · 📦 既有問題 1 項**'));
   const order = ['### 1. 💡 建議改善｜nit', '## 📦 既有問題', '<details><summary>1 項不是這次修改造成的', '### 2. ⛔ 必須改善｜old bug', '## 🧭 Call stack'];
   const positions = order.map(s => body.indexOf(s));
@@ -108,10 +113,12 @@ test('keeps pre-existing problems out of the verdict and in their own folded sec
 });
 
 test('lists what the model left unjudged in the scope section', () => {
-  const body = render(repo, pr, selection, graph, review([], [{ behavior: '扣款失敗後的重試', reason: '重試設定在沒有送審的 config 裡' }]));
+  const extra = Array.from({ length: 6 }, (_, i) => ({ behavior: `行為 ${i}`, reason: '缺資料' }));
+  const body = render(repo, pr, selection, graph, review([], [{ behavior: '扣款失敗後的重試。', reason: '重試設定在沒有送審的 config 裡' }, ...extra]));
   const scopeAt = body.indexOf('審查範圍');
   const listAt = body.indexOf('**沒有判斷的部分**');
   assert.ok(scopeAt >= 0 && listAt > scopeAt);
   assert.ok(body.includes('- 扣款失敗後的重試：重試設定在沒有送審的 config 裡'));
+  assert.ok(body.includes('- 另有 2 則沒有列出'));
   assert.ok(!render(repo, pr, selection, graph, review([])).includes('沒有判斷的部分'));
 });

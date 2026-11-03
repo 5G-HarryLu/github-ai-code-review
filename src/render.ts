@@ -146,7 +146,9 @@ function renderCallStacks(repo: Repo, sha: string, sources: Sources, graph: Chan
 }
 
 function notJudgedList(items: NotJudged): string {
-  const lines = items.slice(0, MAX_NOT_JUDGED).map(n => `- ${sanitizeInline(n.behavior, MAX_NOT_JUDGED_TEXT)}：${sanitizeInline(n.reason, MAX_NOT_JUDGED_TEXT)}`);
+  const behavior = (text: string) => sanitizeInline(text, MAX_NOT_JUDGED_TEXT).replace(/[。.．]+$/, '');
+  const lines = items.slice(0, MAX_NOT_JUDGED).map(n => `- ${behavior(n.behavior)}：${sanitizeInline(n.reason, MAX_NOT_JUDGED_TEXT)}`);
+  if (items.length > MAX_NOT_JUDGED) lines.push(`- 另有 ${items.length - MAX_NOT_JUDGED} 則沒有列出`);
   return `**沒有判斷的部分**（AI 考慮過，但沒有下結論）\n\n${lines.join('\n')}`;
 }
 
@@ -170,9 +172,13 @@ function skippedList(skipped: SkippedFile[]): string {
 }
 
 export function render(repo: Repo, pr: PullRequest, selection: Selection, graph: ChangedFunction[], review: ReviewResult): string {
+  // Pre-existing problems are reported only when they cause wrong results; enforce it here, not only in the prompt.
+  const findings = review.output.findings.filter(f => f.origin === 'introduced' || f.priority === 'must_fix');
+  review = { ...review, output: { ...review.output, findings } };
+
   // This PR's problems before pre-existing ones, must-fix before suggestions within each.
   const rank = (f: Finding) => ORIGINS.indexOf(f.origin) * PRIORITIES.length + PRIORITIES.indexOf(f.priority);
-  const sorted = [...review.output.findings].sort((a, b) => rank(a) - rank(b));
+  const sorted = [...findings].sort((a, b) => rank(a) - rank(b));
 
   // Drop findings from the end (pre-existing, then suggestions) until the comment fits.
   for (let shown = sorted.length; ; shown--) {

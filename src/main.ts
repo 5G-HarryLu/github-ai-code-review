@@ -1,6 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import * as core from '@actions/core';
 import * as github from '@actions/github';
+import { buildCallGraph, Repository } from './callgraph.ts';
 import { selectFiles } from './context.ts';
 import { fetchChangedFiles, fetchPullRequest, upsertComment } from './github.ts';
 import { systemPrompt, userMessage } from './prompt.ts';
@@ -26,10 +27,15 @@ async function run(): Promise<void> {
   if (selection.files.length === 0) {
     body = renderNothingToReview(pr, selection);
   } else {
+    const source = new Repository(process.env.GITHUB_WORKSPACE ?? process.cwd());
+    await source.assertHead(pr.headSha);
+    const graph = await buildCallGraph(source, selection.files);
+    core.info(`追蹤 ${graph.length} 個被修改的函式`);
+
     const nonce = randomBytes(8).toString('hex');
-    const result = await runReview(apiKey, model, systemPrompt(nonce), userMessage(pr, selection, nonce));
+    const result = await runReview(apiKey, model, systemPrompt(nonce), userMessage(pr, selection, graph, nonce));
     core.info(`模型 ${result.model}：輸入 ${result.inputTokens} tokens、輸出 ${result.outputTokens} tokens、${result.output.findings.length} 則發現`);
-    body = render(repo, pr, selection, result);
+    body = render(repo, pr, selection, graph, result);
   }
 
   const url = await upsertComment(octokit, repo, number, body);

@@ -4,51 +4,30 @@ import Anthropic from '@anthropic-ai/sdk';
 import { betaZodOutputFormat } from '@anthropic-ai/sdk/helpers/beta/zod';
 import { z } from 'zod';
 
-export const SEVERITIES = ['critical', 'major', 'minor'] as const;
-export type Severity = (typeof SEVERITIES)[number];
+/** must_fix blocks the merge; suggestion does not. */
+export const PRIORITIES = ['must_fix', 'suggestion'] as const;
+export type Priority = (typeof PRIORITIES)[number];
 
-/** Review dimensions, in the order they appear in the comment. */
+/** Review dimensions; each finding is tagged with one. */
 export const ASPECTS = ['design', 'correctness', 'concurrency', 'security', 'performance', 'style'] as const;
 export type Aspect = (typeof ASPECTS)[number];
 
-export const RATINGS = ['good', 'fair', 'poor', 'na'] as const;
-export type Rating = (typeof RATINGS)[number];
-
-export const VERDICTS = ['approve', 'approve_with_suggestions', 'request_changes'] as const;
-export type Verdict = (typeof VERDICTS)[number];
-
-const Assessment = z.object({ rating: z.enum(RATINGS), comment: z.string() });
-
 export const ReviewSchema = z.object({
   overview: z.string(),
-  aspects: z.object({
-    design: Assessment,
-    correctness: Assessment,
-    concurrency: Assessment,
-    security: Assessment,
-    performance: Assessment,
-    style: Assessment,
-  } satisfies Record<Aspect, typeof Assessment>),
-  /** Entry-to-exit walkthroughs of the changed code paths. */
-  flows: z.array(
-    z.object({
-      entry: z.string(),
-      steps: z.array(z.object({ file: z.string(), line: z.number().int(), action: z.string(), risk: z.string() })),
-    }),
-  ),
+  /** Notes on the changed functions whose callers or callees matter. */
+  call_stacks: z.array(z.object({ function: z.string(), file: z.string(), line: z.number().int(), review: z.string() })),
   findings: z.array(
     z.object({
+      priority: z.enum(PRIORITIES),
       aspect: z.enum(ASPECTS),
       file: z.string(),
       line: z.number().int(),
       end_line: z.number().int(),
-      severity: z.enum(SEVERITIES),
       title: z.string(),
       explanation: z.string(),
       suggested_code: z.string(),
     }),
   ),
-  verdict: z.object({ decision: z.enum(VERDICTS), comment: z.string() }),
 });
 
 export type ReviewOutput = z.infer<typeof ReviewSchema>;

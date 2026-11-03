@@ -3,7 +3,7 @@
 // code spans, fences and escaping are decided by a real parser rather than by
 // regexes. Outside code, nothing can mention people, reference issues, link
 // out, load images or inject HTML.
-import type { AlignType, Nodes, PhrasingContent, Root, RootContent, TableCell } from 'mdast';
+import type { Nodes, PhrasingContent, Root, RootContent } from 'mdast';
 import { fromMarkdown } from 'mdast-util-from-markdown';
 import { gfmFromMarkdown, gfmToMarkdown } from 'mdast-util-gfm';
 import { toMarkdown } from 'mdast-util-to-markdown';
@@ -24,23 +24,6 @@ export function sanitizeInline(text: string, max: number): string {
 /** A fenced code block; the fence is made longer than any backtick run in the code. */
 export function codeBlock(code: string, lang: string): string {
   return serialize({ type: 'root', children: [{ type: 'code', lang: lang || null, value: code.replace(/\s+$/, '') }] });
-}
-
-/** A GFM table whose cells are sanitized inline markdown. The first row is the header. */
-export function table(rows: string[][], align: AlignType[], maxCell: number): string {
-  return serialize({
-    type: 'root',
-    children: [
-      {
-        type: 'table',
-        align,
-        children: rows.map(row => ({
-          type: 'tableRow',
-          children: row.map((cell): TableCell => ({ type: 'tableCell', children: phrasing(cell, maxCell) })),
-        })),
-      },
-    ],
-  });
 }
 
 /** Inline content of one line of model text; anything that is not a single paragraph becomes plain text. */

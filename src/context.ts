@@ -13,6 +13,7 @@ export interface ReviewFile {
   deletions: number;
   annotated: string;
   lines: Map<number, string>;
+  added: Set<number>;
 }
 
 export interface SkippedFile {
@@ -53,13 +54,13 @@ export function selectFiles(changed: ChangedFile[], totalChangedFiles: number, m
       skipped.push({ filename: f.filename, reason: 'GitHub 沒有提供 diff（二進位檔、純改名或單檔 diff 太大）' });
       continue;
     }
-    const { text, lines } = annotatePatch(f.patch);
+    const { text, lines, added } = annotatePatch(f.patch);
     if (used + text.length > maxChars) {
       skipped.push({ filename: f.filename, reason: '超過單次審查的大小上限' });
       continue;
     }
     used += text.length;
-    files.push({ filename: f.filename, status: f.status, additions: f.additions, deletions: f.deletions, annotated: text, lines });
+    files.push({ filename: f.filename, status: f.status, additions: f.additions, deletions: f.deletions, annotated: text, lines, added });
   }
 
   return { files, skipped, unlisted: Math.max(0, totalChangedFiles - changed.length) };

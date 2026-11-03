@@ -7,6 +7,7 @@ test('numbers added and context lines with new-file line numbers', () => {
   const { text, lines } = annotatePatch(patch);
   assert.deepEqual([...lines.keys()], [10, 11, 12, 13]);
   assert.equal(lines.get(11), 'new1');
+  assert.deepEqual([...annotatePatch(patch).added], [11, 12]);
   assert.match(text, /^\s+10  keep$/m);
   assert.match(text, /^\s+11 \+new1$/m);
   assert.match(text, /^\s+13  tail$/m);
